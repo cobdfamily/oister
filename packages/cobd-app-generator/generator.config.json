@@ -3,9 +3,9 @@
   "capacitorVersion": "8.4.0",
   "platforms": ["android", "ios"],
   "base": {
-    "package": "@cobdfamily/cobdappkit",
-    "buildCommand": "npm run build -w @cobdfamily/cobdappkit",
-    "distDir": "../cobdappkit/dist"
+    "$comment": "The shared web shell every app wraps. NOT YET CONFIGURED — cobdappkit was removed. Point buildCommand at a web-only build and distDir at its output (the static web that becomes each app's webDir).",
+    "buildCommand": "",
+    "distDir": ""
   },
   "appsDir": "apps",
   "sharedOverlay": "shared/overlay.json",

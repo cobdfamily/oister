@@ -62,7 +62,7 @@ export function planSteps({ config, app, brand }) {
   const platforms = config.platforms.join(", ");
   return [
     { id: "clean", desc: `wipe ${config.outDir}/${app} (native projects are disposable)` },
-    { id: "build-web", desc: `build base web: ${config.base.buildCommand}` },
+    { id: "build-web", desc: `build base web: ${config.base?.buildCommand || "(base not configured — see generator.config.json)"}` },
     { id: "assemble-web", desc: `copy base dist + overlay assets (menu.json, brand.json) into webDir` },
     { id: "scaffold", desc: `write package.json (Capacitor pinned ${ver}) + capacitor.config.ts (appId=${brand.appId}, appName=${brand.appName})` },
     { id: "install", desc: `npm install in the ephemeral project` },

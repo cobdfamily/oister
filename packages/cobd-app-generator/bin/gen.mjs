@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // cobd-app-generator — regenerate a disposable Capacitor project for one app
-// from the shared base (cobdappkit) + that app's overlay (brand.json / menu.json
-// / icon.png), at the pinned Capacitor version. Approach D.
+// from the shared web base + that app's overlay (brand.json / menu.json /
+// icon.png), at the pinned Capacitor version. Approach D.
+//
+// The shared web base is configured in generator.config.json > base. It is
+// currently unset (the cobdappkit package was removed); set it before a real run.
 //
 // Usage:
 //   node bin/gen.mjs --list
@@ -56,6 +59,12 @@ function generate(config, app, { platforms, dryRun }) {
   log(`app "${app}"  →  ${brand.appName} (${brand.appId})  [${platforms.join(", ")}]`);
   plan.forEach((s, i) => log(`  ${i + 1}. ${s.desc}`));
   if (dryRun) { log("dry-run: nothing executed"); return; }
+
+  if (!config.base?.buildCommand || !config.base?.distDir) {
+    throw new Error(
+      "no shared web base configured (cobdappkit was removed). Set generator.config.json > base.buildCommand and base.distDir to the web shell before a real run.",
+    );
+  }
 
   const out = join(PKG_DIR, config.outDir, app);
   const www = join(out, "www");
@@ -146,4 +155,9 @@ if (apps.length === 0) {
   process.stderr.write("error: name an app, or use --all / --list\n");
   process.exit(1);
 }
-for (const app of apps) generate(config, app, { platforms, dryRun: values["dry-run"] });
+try {
+  for (const app of apps) generate(config, app, { platforms, dryRun: values["dry-run"] });
+} catch (err) {
+  process.stderr.write(`error: ${err instanceof Error ? err.message : String(err)}\n`);
+  process.exit(1);
+}

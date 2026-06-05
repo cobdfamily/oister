@@ -1,8 +1,13 @@
 # @cobdfamily/cobd-app-generator
 
-Generates the family of near-identical Capacitor apps from **one shared base**
-(`@cobdfamily/cobdappkit`) plus a tiny **per-app overlay**. The apps differ only
-by **identifier**, **icon**, and **`menu.json`** — everything else is the base.
+Generates the family of near-identical Capacitor apps from **one shared web
+base** plus a tiny **per-app overlay**. The apps differ only by **identifier**,
+**icon**, and **`menu.json`** — everything else is the base.
+
+> The shared web base is **not configured yet** — set `base` in
+> `generator.config.json` (the former `cobdappkit` package was removed). Until
+> then, `--list`/`--dry-run` and the tests work, but a real generation run will
+> stop with a clear error.
 
 This is **approach D**: native `android/`/`ios/` projects are *disposable*. They
 aren't committed; they're regenerated from scratch at a **pinned** Capacitor
@@ -48,7 +53,7 @@ ready to build + sign.
 - New app → add `apps/<id>/` with `brand.json`, `menu.json`, `icon.png`.
 - Different menu → edit that app's `menu.json`.
 - Different icon → replace that app's `icon.png`.
-- Shared change → edit the base (`cobdappkit`) or `shared/overlay.json`; every app
+- Shared change → edit the shared web base or `shared/overlay.json`; every app
   inherits it on next regen. Nothing to sync by hand.
 
 ## Signing (survives regeneration)
