@@ -37,4 +37,14 @@ if (typeof window !== "undefined" && (window as { __COBDKIT_AUTOINSTALL__?: unkn
 export { createTransport } from "./transport.js";
 export { installGeolocationShim } from "./geolocation.js";
 export { installTorch } from "./torch.js";
-export type { Cobdkit, TorchAPI, Transport, TransportOptions } from "./types.js";
+export type {
+  Cobdkit,
+  TorchAPI,
+  Transport,
+  TransportOptions,
+  CallMessage,
+  ResultMessage,
+  ErrorMessage,
+  EventMessage,
+  InboundMessage,
+} from "./types.js";

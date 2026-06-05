@@ -4,6 +4,10 @@
   "private": true,
   "description": "Mini-app bridge runtime for the cobdfamily super-app shell.",
   "license": "AGPL-3.0",
+  "scripts": {
+    "build": "npm run build -w @cobdfamily/cobdkit && npm run build -w @cobdfamily/cbhostkit",
+    "test": "npm test --workspaces --if-present"
+  },
   "workspaces": [
     "packages/*"
   ]

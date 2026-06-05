@@ -1,0 +1,33 @@
+{
+  "name": "@cobdfamily/cbhostkit",
+  "version": "0.0.0",
+  "description": "Host-side broker for the cobdkit mini-app bridge: runs in the super-app shell, answers cobdkit calls with native Capacitor plugins.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@capacitor/haptics": "^7.0.1",
+    "@capgo/capacitor-flash": "^7.0.4",
+    "@cobdfamily/cobdkit": "*"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.0.0",
+    "typescript": "^5.6.3"
+  }
+}
