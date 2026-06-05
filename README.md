@@ -8,7 +8,7 @@ an iframe or in the shell itself — reaches native device functionality.
 
 | Package | Role |
 | --- | --- |
-| [`@cobdfamily/cobdcorekit`](packages/cobdcorekit) | The **client API**. The *only* thing you ever call. Used the same way whether your code runs **inside** a mini-app iframe or **outside** it in the shell. Exposes the surfaces apps use — a shimmed `navigator.geolocation`, the `cobdkit.torch` API, etc. |
+| [`@cobdfamily/cobdcorekit`](packages/cobdcorekit) | The **client API**. The *only* thing you ever call. Used the same way whether your code runs **inside** a mini-app iframe or **outside** it in the shell. Exposes the surfaces apps use — a shimmed `navigator.geolocation`, the `COBDCoreKit.torch` API, etc. |
 | [`@cobdfamily/cobdhostkit`](packages/cobdhostkit) | The **native broker**. The *only* thing that actually touches Capacitor plugins (`@capgo/capacitor-flash`, `@capacitor/haptics`, …). Runs in the shell, enforces origin policy, answers requests. **Never called directly.** |
 
 The rule: **always go through `cobdcorekit`; never call `cobdhostkit` directly** —
@@ -35,7 +35,7 @@ that `cobdcorekit` talks to on your behalf.
 | Surface | Kind | Caller sees |
 | --- | --- | --- |
 | `navigator.geolocation` | **shim** of the W3C API | a standard browser API — unmodified apps just work |
-| `cobdkit.torch` | **new** API (no web standard) | `on()` / `off()` / `toggle()` / `isOn` |
+| `COBDCoreKit.torch` | **new** API (no web standard) | `on()` / `off()` / `toggle()` / `isOn` |
 
 ## Two contexts, one API
 
@@ -44,23 +44,23 @@ works either side of the iframe boundary:
 
 ```ts
 // in a mini-app iframe — postMessage to the parent shell
-import { installCobdkit } from "@cobdfamily/cobdcorekit";
-installCobdkit({ hostOrigin: "https://shell.bowencommunity.ca" });
+import { installCOBDCoreKit } from "@cobdfamily/cobdcorekit";
+installCOBDCoreKit({ hostOrigin: "https://shell.bowencommunity.ca" });
 ```
 
 ```ts
 // in the shell itself — talk to the local broker in-process, no iframe hop
 import { createHostBroker, createTorchCapability } from "@cobdfamily/cobdhostkit";
-import { installCobdkit } from "@cobdfamily/cobdcorekit";
+import { installCOBDCoreKit } from "@cobdfamily/cobdcorekit";
 
 const broker = createHostBroker({
   capabilities: { torch: createTorchCapability() },
 }); // also serves mini-app iframes via its window listener
 
-installCobdkit({ broker: broker.local }); // shell code now uses cobdkit.torch too
+installCOBDCoreKit({ broker: broker.local }); // shell code now uses COBDCoreKit.torch too
 ```
 
-Either way the caller writes `cobdkit.torch.on()` / `navigator.geolocation.*`
+Either way the caller writes `COBDCoreKit.torch.on()` / `navigator.geolocation.*`
 and never touches `cobdhostkit`.
 
 ## Develop

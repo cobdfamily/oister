@@ -11,11 +11,11 @@ export interface TorchOptions {
 }
 
 /**
- * `torch` capability — implements cobdkit's stateful `on` / `off` / `toggle` API
+ * `torch` capability — implements COBDCoreKit's stateful `on` / `off` / `toggle` API
  * on top of `@capgo/capacitor-flash`, with an optional `@capacitor/haptics`
  * buzz on each change (the two plugins bowencommunity-core already depends on).
  *
- * Methods return the resulting boolean state, which is what `cobdkit.torch`
+ * Methods return the resulting boolean state, which is what `COBDCoreKit.torch`
  * caches into its `isOn` mirror.
  */
 export function createTorchCapability(opts: TorchOptions = {}): CapabilityHandler {

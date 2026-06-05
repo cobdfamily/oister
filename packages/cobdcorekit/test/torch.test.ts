@@ -28,19 +28,19 @@ test("torch round-trips through the postMessage transport", async () => {
   let torchState = false;
   host.addEventListener("message", (e) => {
     const m = (e as MessageEvent).data as {
-      __cobdkit?: boolean;
+      __COBDCoreKit?: boolean;
       kind?: string;
       capability?: string;
       method?: string;
       id?: number;
     };
-    if (!m?.__cobdkit || m.kind !== "call" || m.capability !== "torch") return;
+    if (!m?.__COBDCoreKit || m.kind !== "call" || m.capability !== "torch") return;
     if (m.method === "on") torchState = true;
     else if (m.method === "off") torchState = false;
     else if (m.method === "toggle") torchState = !torchState;
     // reply to the child (real brokers use e.source.postMessage)
     (child as unknown as { postMessage: (d: unknown) => void }).postMessage({
-      __cobdkit: true,
+      __COBDCoreKit: true,
       kind: "result",
       id: m.id,
       value: torchState,

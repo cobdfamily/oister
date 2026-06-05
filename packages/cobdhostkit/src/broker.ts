@@ -14,14 +14,14 @@ export interface HostBroker {
   stop(): void;
   /**
    * In-process entry point for a shell-side `cobdcorekit` — pass this as the
-   * `broker` option to `installCobdkit`/`createTransport`. The shell's own code
+   * `broker` option to `installCOBDCoreKit`/`createTransport`. The shell's own code
    * then uses the same cobdcorekit API as a mini-app, with no iframe hop.
    */
   readonly local: LocalBroker;
 }
 
 /**
- * The host side of the cobdkit bridge. Lives in the super-app shell and is the
+ * The host side of the COBDCoreKit bridge. Lives in the super-app shell and is the
  * single place where origin policy is enforced and native plugins are invoked.
  * It serves two callers off one set of capability handlers:
  *   - mini-app iframes, via a `window` `message` listener (postMessage)
@@ -54,7 +54,7 @@ export function createHostBroker(opts: HostBrokerOptions = {}): HostBroker {
   // --- iframe-facing transport: window message listener ---
   const listener = async (e: MessageEvent): Promise<void> => {
     const msg = e.data as CallMessage | undefined;
-    if (!msg || msg.__cobdkit !== true || msg.kind !== "call") return;
+    if (!msg || msg.__COBDCoreKit !== true || msg.kind !== "call") return;
 
     const source = e.source as Window | null;
     if (!source) return;
@@ -64,7 +64,7 @@ export function createHostBroker(opts: HostBrokerOptions = {}): HostBroker {
     };
 
     if (!originAllowed(e.origin)) {
-      reply({ __cobdkit: true, kind: "error", id: msg.id, error: { code: 1, message: "Origin not allowed" } });
+      reply({ __COBDCoreKit: true, kind: "error", id: msg.id, error: { code: 1, message: "Origin not allowed" } });
       return;
     }
 
@@ -72,7 +72,7 @@ export function createHostBroker(opts: HostBrokerOptions = {}): HostBroker {
       origin: e.origin,
       emit(event, payload) {
         const ev: EventMessage = {
-          __cobdkit: true,
+          __COBDCoreKit: true,
           kind: "event",
           capability: msg.capability,
           event,
@@ -84,10 +84,10 @@ export function createHostBroker(opts: HostBrokerOptions = {}): HostBroker {
 
     try {
       const value = await run(msg.capability, msg.method, msg.options, ctx);
-      reply({ __cobdkit: true, kind: "result", id: msg.id, value });
+      reply({ __COBDCoreKit: true, kind: "result", id: msg.id, value });
     } catch (err) {
       reply({
-        __cobdkit: true,
+        __COBDCoreKit: true,
         kind: "error",
         id: msg.id,
         error: { message: err instanceof Error ? err.message : String(err) },

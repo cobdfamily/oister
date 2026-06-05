@@ -1,7 +1,7 @@
 {
   "name": "@cobdfamily/cobdcorekit",
   "version": "0.0.0",
-  "description": "The cobdkit client API: shims navigator.geolocation and exposes cobdkit.torch, routing both to cobdhostkit. The only bridge API you call, inside or outside the iframe.",
+  "description": "The COBDCoreKit client API: shims navigator.geolocation and exposes COBDCoreKit.torch, routing both to cobdhostkit. The only bridge API you call, inside or outside the iframe.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

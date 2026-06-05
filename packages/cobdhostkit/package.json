@@ -1,7 +1,7 @@
 {
   "name": "@cobdfamily/cobdhostkit",
   "version": "0.0.0",
-  "description": "Native broker for the cobdkit bridge: runs in the super-app shell and answers cobdcorekit calls with native Capacitor plugins. The only package that touches native; never called directly.",
+  "description": "Native broker for the COBDCoreKit bridge: runs in the super-app shell and answers cobdcorekit calls with native Capacitor plugins. The only package that touches native; never called directly.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

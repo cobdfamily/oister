@@ -1,15 +1,15 @@
 # @cobdfamily/cobdhostkit
 
-The **native broker** of the cobdkit bridge — the only package that actually
+The **native broker** of the COBDCoreKit bridge — the only package that actually
 touches Capacitor plugins, and one you **never call directly** (callers always
 go through [`@cobdfamily/cobdcorekit`](../cobdcorekit)). It runs in the
-**super-app shell** (e.g. `bowencommunity-core`), listens for the `__cobdkit`
+**super-app shell** (e.g. `bowencommunity-core`), listens for the `__COBDCoreKit`
 calls that `cobdcorekit` posts, enforces origin policy, and answers them with
 native plugins.
 
 ```
 cobdcorekit caller                    shell (this package)
-  cobdkit.torch.on() ── postMessage ──▶ createHostBroker()
+  COBDCoreKit.torch.on() ── postMessage ──▶ createHostBroker()
                                           └─ torch capability
                                                ├─ @capgo/capacitor-flash
                                                └─ @capacitor/haptics

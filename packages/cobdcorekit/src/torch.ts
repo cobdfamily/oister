@@ -1,7 +1,7 @@
 import type { TorchAPI, Transport } from "./types.js";
 
 /**
- * `cobdkit.torch` — a new API (the web has no torch standard to shim).
+ * `COBDCoreKit.torch` — a new API (the web has no torch standard to shim).
  *
  * Each method round-trips to the host, which owns the one physical LED and
  * returns the authoritative resulting state. `isOn` is a locally-cached mirror

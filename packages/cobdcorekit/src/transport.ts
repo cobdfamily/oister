@@ -44,7 +44,7 @@ export function createIframeTransport(opts: { hostOrigin?: string; target?: Wind
   window.addEventListener("message", (e: MessageEvent) => {
     if (hostOrigin !== "*" && e.origin !== hostOrigin) return;
     const msg = e.data as InboundMessage | undefined;
-    if (!msg || (msg as { __cobdkit?: unknown }).__cobdkit !== true) return;
+    if (!msg || (msg as { __COBDCoreKit?: unknown }).__COBDCoreKit !== true) return;
 
     if (msg.kind === "result") {
       const p = pending.get(msg.id);
@@ -64,7 +64,7 @@ export function createIframeTransport(opts: { hostOrigin?: string; target?: Wind
   });
 
   function post(message: object): void {
-    target.postMessage({ __cobdkit: true, ...message }, hostOrigin);
+    target.postMessage({ __COBDCoreKit: true, ...message }, hostOrigin);
   }
 
   function call(capability: string, method: string, options?: unknown): Promise<unknown> {

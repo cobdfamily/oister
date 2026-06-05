@@ -1,4 +1,4 @@
-/** Shared protocol + public types for the cobdkit mini-app runtime. */
+/** Shared protocol + public types for the COBDCoreKit mini-app runtime. */
 
 /**
  * The in-process broker interface that cobdcorekit talks to when it runs in the
@@ -47,7 +47,7 @@ export interface Transport {
 
 /** child -> host */
 export interface CallMessage {
-  __cobdkit: true;
+  __COBDCoreKit: true;
   kind: "call";
   id: number;
   capability: string;
@@ -57,7 +57,7 @@ export interface CallMessage {
 
 /** host -> child: successful reply to a `call` */
 export interface ResultMessage {
-  __cobdkit: true;
+  __COBDCoreKit: true;
   kind: "result";
   id: number;
   value: unknown;
@@ -65,7 +65,7 @@ export interface ResultMessage {
 
 /** host -> child: failed reply to a `call` */
 export interface ErrorMessage {
-  __cobdkit: true;
+  __COBDCoreKit: true;
   kind: "error";
   id: number;
   error: { code?: number; message: string };
@@ -73,7 +73,7 @@ export interface ErrorMessage {
 
 /** host -> child: unsolicited push (watch ticks, torch state changes, ...) */
 export interface EventMessage {
-  __cobdkit: true;
+  __COBDCoreKit: true;
   kind: "event";
   capability: string;
   event: string;
@@ -90,15 +90,15 @@ export interface TorchAPI {
   readonly isOn: boolean;
 }
 
-export interface Cobdkit {
+export interface COBDCoreKit {
   readonly version: string;
   readonly torch: TorchAPI;
 }
 
 declare global {
   interface Window {
-    cobdkit: Cobdkit;
+    COBDCoreKit: COBDCoreKit;
   }
   // eslint-disable-next-line no-var
-  var cobdkit: Cobdkit;
+  var COBDCoreKit: COBDCoreKit;
 }
