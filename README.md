@@ -35,7 +35,7 @@ that `cobdcorekit` talks to on your behalf.
 | Surface | Kind | Caller sees |
 | --- | --- | --- |
 | `navigator.geolocation` | **shim** of the W3C API | a standard browser API — unmodified apps just work |
-| `COBDCoreKit.torch` | **new** API (no web standard) | `on()` / `off()` / `toggle()` / `isOn` |
+| `COBDCoreKit.torch` | **new** API (no web standard) | `on()` / `off()` / `toggle()` / `flash()` / `isOn` |
 
 ## Two contexts, one API
 

@@ -86,6 +86,11 @@ export interface TorchAPI {
   on(): Promise<boolean>;
   off(): Promise<boolean>;
   toggle(): Promise<boolean>;
+  /**
+   * One-shot blink (ported from bowencommunity-core): light on + a haptic buzz,
+   * then off after `onMs` (default 750). Resolves when the blink completes.
+   */
+  flash(onMs?: number): Promise<void>;
   /** Locally-cached mirror of host truth — eventually consistent, fine for UI. */
   readonly isOn: boolean;
 }

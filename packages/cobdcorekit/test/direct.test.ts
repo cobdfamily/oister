@@ -26,6 +26,27 @@ test("torch round-trips through a direct (in-process) transport", async () => {
   assert.equal(await torch.off(), false);
 });
 
+test("torch.flash() calls the host and the isOn mirror tracks the host's state events", async () => {
+  const seen: string[] = [];
+  const broker: LocalBroker = {
+    async invoke(_capability, method, _options, emit) {
+      seen.push(method);
+      if (method === "flash") {
+        emit("state", { isOn: true });
+        emit("state", { isOn: false });
+        return false;
+      }
+      return null;
+    },
+  };
+
+  const torch = installTorch(createDirectTransport(broker));
+  await torch.flash();
+
+  assert.ok(seen.includes("flash"));
+  assert.equal(torch.isOn, false); // ended off, per the host's final state event
+});
+
 test("direct transport routes emitted events to onEvent subscribers", async () => {
   const broker: LocalBroker = {
     async invoke(_capability, method, _options, emit) {

@@ -29,6 +29,10 @@ export function installTorch(transport: Transport): TorchAPI {
       isOn = !!(await transport.call("torch", "toggle"));
       return isOn;
     },
+    async flash(onMs?: number) {
+      // The host drives the blink; `isOn` tracks it via the host's `state` events.
+      await transport.call("torch", "flash", onMs === undefined ? {} : { onMs });
+    },
     get isOn() {
       return isOn;
     },
