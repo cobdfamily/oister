@@ -1,20 +1,24 @@
 # fastlane lanes for a GENERATED app. Run AFTER `gen.mjs <app>` has produced
-# .generated/<app>/ios. Pass the app id via the `app` option.
+# .generated/<app>/ios. Pass the app's directory name (under apps/) via `app`.
 #
-#   fastlane ios release app:ca.cobd.app.alpha
+#   fastlane ios release app:cobd
 #
-# Signing is installed by `match` and applied via exportOptions.plist — it does
-# not depend on anything stored in the regenerated Xcode project.
+# The bundle id is read from apps/<app>/brand.json, so it stays in sync with the
+# generator. Signing is installed by `match` and applied via exportOptions.plist
+# — it does not depend on anything stored in the regenerated Xcode project.
+
+require "json"
 
 platform :ios do
   desc "Build + sign + upload a generated app"
   lane :release do |options|
-    app_id = options[:app] || UI.user_error!("pass app:<bundle-id>")
+    app = options[:app] || UI.user_error!("pass app:<dir-name> (e.g. app:cobd)")
+    app_id = JSON.parse(File.read("apps/#{app}/brand.json"))["appId"]
 
     match(type: "appstore", app_identifier: app_id, readonly: true)
 
     build_app(
-      project: ".generated/#{app_id}/ios/App/App.xcodeproj",
+      project: ".generated/#{app}/ios/App/App.xcodeproj",
       scheme: "App",
       export_method: "app-store",
       export_options: "templates/exportOptions.plist"

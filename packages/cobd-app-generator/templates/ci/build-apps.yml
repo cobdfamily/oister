@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [alpha, bravo, charlie]
+        app: [cobd, blindhub, bowencommunity]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,7 +25,7 @@ jobs:
         working-directory: common/oister/packages/cobd-app-generator
         run: node bin/gen.mjs ${{ matrix.app }} --platforms android
       - name: Build signed bundle
-        working-directory: common/oister/packages/cobd-app-generator/.generated/ca.cobd.app.${{ matrix.app }}/android
+        working-directory: common/oister/packages/cobd-app-generator/.generated/${{ matrix.app }}/android
         env:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -43,7 +43,7 @@ jobs:
     runs-on: [self-hosted, macos, m1]
     strategy:
       matrix:
-        app: [alpha, bravo, charlie]
+        app: [cobd, blindhub, bowencommunity]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,4 +58,4 @@ jobs:
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: fastlane ios release app:ca.cobd.app.${{ matrix.app }}
+        run: fastlane ios release app:${{ matrix.app }}

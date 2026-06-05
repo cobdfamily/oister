@@ -10,9 +10,9 @@ storage_mode("git")
 type("appstore")
 
 app_identifier([
-  "ca.cobd.app.alpha",
-  "ca.cobd.app.bravo",
-  "ca.cobd.app.charlie",
+  "ca.cobd.apps.core",
+  "ca.blindhub.apps.core",
+  "ca.bowencommunity.apps.core",
 ])
 
 team_id(ENV["APPLE_TEAM_ID"])
