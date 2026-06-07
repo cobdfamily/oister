@@ -1,0 +1,72 @@
+/*
+ * Shell layout.
+ *
+ * Extracted verbatim from the two base64-inlined <link> stylesheets in
+ * bowencommunity-core's built www/index.html — behaviour is unchanged, the
+ * rules just live in a real, editable file now.
+ *
+ * Narrow (<=800px): single column, menu hidden, home button shown, toolbar
+ * pinned under the main view. Wide (>=801px): menu rail + toolbar on the left,
+ * main view filling the rest via a CSS grid.
+ */
+
+@media all and (max-width: 800px) {
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #home {
+    visibility: visible;
+  }
+
+  #mainview {
+    height: 90%;
+  }
+
+  #menu {
+    display: block;
+    display: none;
+    height: 100%;
+  }
+
+  #toolbar {
+    height: 10%;
+  }
+
+}
+
+@media all and (min-width: 801px) {
+
+  body {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 4fr 1fr;
+    grid-template-areas:
+      "menu main"
+      "toolbar main";
+    column-gap: 0px;
+    row-gap: 0px;
+    align-items: stretch;
+    justify-items: stretch;
+  }
+
+  #menu {
+    display: block;
+    grid-area: menu;
+  }
+
+  #home {
+    visibility: hidden;
+  }
+
+  #mainview {
+    grid-area: main;
+  }
+
+  #toolbar {
+    grid-area: toolbar;
+  }
+
+}

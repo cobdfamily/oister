@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2020",
+    "moduleResolution": "bundler",
+    "lib": ["es2018", "dom"],
+    "types": ["jquery", "vite/client"],
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "sourceMap": true,
+    "noEmit": true
+  },
+  "include": ["src"],
+  "exclude": ["dist", "vite.config.ts"]
+}

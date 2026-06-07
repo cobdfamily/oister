@@ -1,0 +1,23 @@
+{
+  "name": "@cobdfamily/www",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TEMPORARY: the bowencommunity-core umbrella shell (index + iframe nav + toolbar) vendored into oister with all its assets in one tree, as a clean Vite source app. Staging ground for wiring the shell onto cobdcorekit/cobdhostkit.",
+  "type": "module",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@cobdfamily/clf-core": "latest",
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.32",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.5"
+  }
+}
