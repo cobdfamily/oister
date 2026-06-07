@@ -9,6 +9,7 @@
     "test": "npm test --workspaces --if-present"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "!packages/springboard"
   ]
 }

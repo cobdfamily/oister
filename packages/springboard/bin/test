@@ -1,0 +1,25 @@
+#!/bin/sh
+# Repo-local test entrypoint, picked up by the fleet pre-push hook
+# (infra/hooks/pre-push prefers an executable bin/test over `npm test`).
+#
+# Runs the Karma/Jasmine unit suite ONCE, headless, and sandbox-free so
+# it works in CI runners and containers where Chrome has no usable
+# sandbox. Relies on the `ChromeHeadlessNoSandbox` launcher defined in
+# karma.conf.js.
+set -eu
+
+# Point Karma at a Chrome/Chromium binary if the caller hasn't already.
+if [ -z "${CHROME_BIN:-}" ]; then
+	for c in \
+		"$HOME"/.cache/puppeteer/chrome/*/chrome-linux64/chrome \
+		/usr/bin/google-chrome /usr/bin/google-chrome-stable \
+		/usr/bin/chromium /usr/bin/chromium-browser; do
+		if [ -x "$c" ]; then
+			CHROME_BIN="$c"
+			export CHROME_BIN
+			break
+		fi
+	done
+fi
+
+exec npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox

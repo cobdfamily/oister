@@ -1,0 +1,6 @@
+// Theming comes from @cobdfamily/clf-core design tokens, loaded as
+// CSS custom properties via the "styles" array in angular.json
+// (node_modules/@cobdfamily/clf-core/dist/tokens.css). They can't be
+// pulled in here: a Sass @import of a .css file emits a plain runtime
+// @import the browser can't resolve from a bare package specifier.
+// Add app-specific global styles below.
