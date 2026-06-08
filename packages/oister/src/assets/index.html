@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="{{site.lang}}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- Mobile browser chrome tint (one default, one for dark
+       mode via media-query swap). -->
+  <meta name="theme-color"
+        content="{{site.theme_color}}"
+        media="(prefers-color-scheme: light)" />
+  <meta name="theme-color"
+        content="{{site.theme_color.dark}}"
+        media="(prefers-color-scheme: dark)" />
+
+  <!-- Open a TCP/TLS handshake to the CDN early so the
+       script + style downloads start sooner. -->
+  <link rel="preconnect" href="https://cdn.blindhub.ca"
+        crossorigin />
+  <link rel="dns-prefetch" href="https://cdn.blindhub.ca" />
+  <link rel="preload" as="style"
+        href="{{cdn.tokens_css}}" {{cdn.tokens_css.integrity_attr}} />
+  <link rel="modulepreload"
+        href="{{cdn.ionic_esm}}" {{cdn.ionic_esm.integrity_attr}} />
+
+  <title>{{page.title.head}}</title>
+  <link rel="canonical" href="{{page.url}}" />
+  <meta name="description" content="{{page.description}}" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="{{page.og_type}}" />
+  <meta property="og:title"       content="{{page.title.head}}" />
+  <meta property="og:description" content="{{page.description}}" />
+  <meta property="og:url"         content="{{page.url}}" />
+  <meta property="og:site_name"   content="{{site.title}}" />
+  <meta property="og:image"       content="{{page.image}}" />
+  <meta property="og:locale"      content="{{site.lang}}" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="{{social.twitter_handle}}" />
+  <meta name="twitter:title"       content="{{page.title.head}}" />
+  <meta name="twitter:description" content="{{page.description}}" />
+  <meta name="twitter:image"       content="{{page.image}}" />
+
+  <!-- Organisation (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type":    "Organization",
+    "name":     "{{site.author}}",
+    "url":      "{{org.url}}",
+    "logo":     "{{org.logo_url}}"
+  }
+  </script>
+
+  <link rel="stylesheet" {{cdn.ionic_css.integrity_attr}} href="{{cdn.ionic_css}}" />
+  <link rel="stylesheet" {{cdn.tokens_css.integrity_attr}} href="{{cdn.tokens_css}}" />
+  <link rel="stylesheet" media="print" {{cdn.print_css.integrity_attr}} href="{{cdn.print_css}}" />
+
+  <script type="module" {{cdn.ionic_esm.integrity_attr}} src="{{cdn.ionic_esm}}"></script>
+  <script type="module" {{cdn.ionicons_esm.integrity_attr}} src="{{cdn.ionicons_esm}}"></script>
+
+  <!-- chrome.css holds the rules that used to be in
+       an inline <style> block here (skip-link, the
+       AA-safe ion-searchbar placeholder pin, the
+       active-nav highlight, the text-size root font-
+       size multiplier). Externalised so the compiled
+       output works under strict Content-Security-
+       Policy (no 'unsafe-inline'). -->
+  <link rel="stylesheet" {{cdn.chrome_css.integrity_attr}} href="{{cdn.chrome_css}}" />
+  <!-- font-scale-paint.js is a classic (non-module)
+       script: blocks parsing for one network round-
+       trip, runs synchronously before first paint
+       to apply the persisted text-size scale. Module
+       scripts are deferred, which would cause a
+       flash of Medium-sized content for users who
+       picked Large or Small. Ships from clf-core
+       because the cookie name + CSS var contract
+       belong with clf-core's runtime. -->
+  <script {{cdn.font_scale_paint_js.integrity_attr}} src="{{cdn.font_scale_paint_js}}"></script>
+  <!-- One bundle to register every CLF custom
+       element + boot the theming runtime. Module
+       script (deferred); runs after the body is
+       parsed. Replaces the historical per-element
+       script tags (theming/runtime, theme-toggle,
+       font-scale-toggle, cobd-nav, theming/init) --
+       any cobd-* element authored inside body
+       content upgrades from this one entry point.
+       Sub-resource ES imports beneath this aren't
+       separately SRI-verified by the browser, but
+       everything is on the same cdn.blindhub.ca
+       origin -- the entry point's hash is the
+       load-bearing verification. -->
+  <script type="module" {{cdn.components_js.integrity_attr}} src="{{cdn.components_js}}"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">{{i18n.skip_to_main}}</a>
+  <a href="#cobd-page-search" class="skip-link">{{i18n.skip_to_search}}</a>
+
+  <!-- No-JS fallback. The :not(:defined) rule in <head>
+       hides every undefined custom element until Ionic
+       upgrades them; when JS never loads, all the ion-*
+       below stays invisible. <noscript> renders only when
+       JS is OFF, so it doubles as the durable "page is
+       still useful without JS" surface. Both <ul>s are
+       generated at build time from packages/clf/src/navs/
+       *.json so there is one source of truth -- the same
+       data the runtime loader consumes. -->
+  <noscript>
+    <div class="cobd-noscript">
+      <p>This page uses JavaScript for the full
+        experience. Plain navigation:</p>
+      {{nav.primary_fallback_html}}
+      <h2>More COBD</h2>
+      {{nav.more_cobd_fallback_html}}
+    </div>
+  </noscript>
+
+  <ion-app>
+    <!-- <cobd-app-shell> from @cobdfamily/clf-core owns the
+         whole umbrella shell: the <ion-split-pane>, the side
+         <ion-menu> (its <cobd-menu-toolbar> header plus the
+         primary / "More COBD" / Accessibility accordions built
+         from <cobd-nav> + the theme/text-size toggles), the
+         main pane (#main, the skip-link target), and the
+         <cobd-app-footer>. What used to be ~80 lines of inline
+         split-pane markup is now one element shared with every
+         other family shell.
+
+         The accordion labels, "Menu"/"Done", and the
+         Accessibility / Theme / Text size strings are CLF
+         chrome strings resolved at runtime from clf-core's
+         ./i18n module, so they aren't passed in. The nav slugs
+         and site title ARE consumer config: the engine resolves
+         them at compile time (Hugo: Site.Params, WP: get_option,
+         etc.) and feeds them through as attributes below.
+
+         The element's only authored child is the app window;
+         it is relocated into the split-pane's main pane once,
+         on upgrade (so the <iframe> is never moved/reloaded by
+         a later re-render). -->
+    <cobd-app-shell
+      site-title="{{site.title}}"
+      nav-path="{{nav.primary_slug}}"
+      more-title="More COBD"
+      more-path="{{nav.more_cobd_slug}}">
+      <div id="iframe">
+        <iframe name="app"></iframe>
+      </div>
+    </cobd-app-shell>
+  </ion-app>
+</body>
+</html>
