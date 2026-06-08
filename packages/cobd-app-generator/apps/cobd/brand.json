@@ -2,6 +2,7 @@
   "appId": "ca.cobd.apps.core",
   "appName": "COBD",
   "extra": {
-    "themeColor": "#31d53d"
+    "themeColor": "#31d53d",
+    "appUrl": "https://cobd.ca/"
   }
 }

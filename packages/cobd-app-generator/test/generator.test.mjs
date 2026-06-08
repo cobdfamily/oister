@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { renderApp } from "@cobdfamily/oister";
 
 import {
-  planSteps, renderCapacitorConfig, renderProjectPackageJson,
+  cdnUrlsFromManifest, planSteps, renderCapacitorConfig, renderProjectPackageJson,
   validateBrand, validateConfig, validateMenu, validateSeo,
 } from "../src/lib.mjs";
 
@@ -53,6 +53,25 @@ test("renderApp turns brand + menu + seo + cdn into the shell index.html", () =>
   assert.match(html, /content="#abcdef"/);                // brand.extra.themeColor
   assert.match(html, /<a href="\/welcome">Home<\/a>/);    // menu.target -> href
   assert.doesNotMatch(html, /\{\{/);
+});
+
+test("cdnUrlsFromManifest builds asset URLs from the manifest version paths", () => {
+  const manifest = {
+    components: {
+      clfCommon: { path: "clf-core/7.1.0/" },
+      clfFactoryChrome: { path: "clf-assets/cf0.1.39/" },
+      ionic: { path: "ionic/8.8.8/" },
+      ionicons: { path: "ionicons/8.0.13/" },
+    },
+  };
+  const urls = cdnUrlsFromManifest(manifest, "https://cdn.blindhub.ca/");
+  assert.equal(urls.tokensCss.url, "https://cdn.blindhub.ca/clf-core/7.1.0/tokens.css");
+  assert.equal(urls.componentsJs.url, "https://cdn.blindhub.ca/clf-core/7.1.0/components/index.js");
+  assert.equal(urls.fontScalePaintJs.url, "https://cdn.blindhub.ca/clf-core/7.1.0/theming/font-scale-paint.js");
+  assert.equal(urls.chromeCss.url, "https://cdn.blindhub.ca/clf-assets/cf0.1.39/chrome.css");
+  assert.equal(urls.ioniconsEsm.url, "https://cdn.blindhub.ca/ionicons/8.0.13/ionicons.esm.js");
+  assert.throws(() => cdnUrlsFromManifest({ components: {} }, "https://x"), /missing component "clfCommon"/);
+  assert.throws(() => cdnUrlsFromManifest(manifest, ""), /base url required/);
 });
 
 test("validateConfig defaults platforms and rejects unknown ones", () => {

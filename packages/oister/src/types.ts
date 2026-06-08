@@ -91,6 +91,14 @@ export interface OisterConfig {
          */
         items: NavLink[];
     };
+    app: {
+        /**
+         * URL the shell's `<iframe name="app">` loads -- the web UI
+         * this native shell wraps. Empty string renders the iframe
+         * with no src (blank app pane).
+         */
+        url: string;
+    };
     cdn: CdnManifest;
 }
 
@@ -102,10 +110,12 @@ export interface Brand {
     appId: string;
     /** Display name -> the shell's site title. */
     appName: string;
-    /** Pass-through extras; `themeColor` / `themeColorDark` are read. */
+    /** Pass-through extras; `themeColor` / `themeColorDark` / `appUrl` are read. */
     extra?: {
         themeColor?: string;
         themeColorDark?: string;
+        /** URL the shell's iframe loads -> OisterConfig.app.url. */
+        appUrl?: string;
         [key: string]: unknown;
     };
 }

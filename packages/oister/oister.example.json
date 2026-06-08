@@ -32,6 +32,9 @@
       { "label": "About", "href": "/about" }
     ]
   },
+  "app": {
+    "url": "https://cobd.ca/"
+  },
   "cdn": {
     "tokensCss": {
       "url": "https://cdn.blindhub.ca/clf-assets/tokens.css",

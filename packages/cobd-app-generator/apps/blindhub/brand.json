@@ -2,6 +2,7 @@
   "appId": "ca.blindhub.apps.core",
   "appName": "BlindHub",
   "extra": {
-    "themeColor": "#1d6fd5"
+    "themeColor": "#1d6fd5",
+    "appUrl": "https://blindhub.ca/"
   }
 }

@@ -75,6 +75,15 @@ test("leaves no unsubstituted handlebars tokens", () => {
     assert.doesNotMatch(html, /\{\{/, "found an unrendered {{ token");
 });
 
+test("the iframe gets a src from app.url, and none when unset", () => {
+    const withUrl = renderOisterShell(exampleConfig());
+    assert.match(withUrl, /<iframe name="app" src="https:\/\/cobd\.ca\/">/);
+    const config = exampleConfig();
+    config.app = { url: "" };
+    const noUrl = renderOisterShell(config);
+    assert.match(noUrl, /<iframe name="app"><\/iframe>/);
+});
+
 test("integrity attributes are emitted raw, not HTML-escaped", () => {
     const html = renderOisterShell(exampleConfig());
     assert.match(html,
@@ -146,6 +155,21 @@ test("appToConfig applies COBD defaults when seo omits fields", () => {
     assert.equal(config.org.url, "https://x/");        // -> seo.url
     assert.equal(config.org.logoUrl, "https://x/og.png"); // -> seo.image
     assert.equal(config.site.themeColor, "#31d53d");   // -> brand.extra
+});
+
+test("appToConfig reads the iframe app url from brand.extra.appUrl", () => {
+    const brand: Brand = {
+        appId: "ca.cobd.x",
+        appName: "X",
+        extra: { appUrl: "https://app.example/" },
+    };
+    const config = appToConfig(exampleAppInput({ brand }));
+    assert.equal(config.app.url, "https://app.example/");
+    // absent -> empty string (iframe renders with no src)
+    const bare = appToConfig(exampleAppInput({
+        brand: { appId: "ca.cobd.y", appName: "Y" },
+    }));
+    assert.equal(bare.app.url, "");
 });
 
 test("appToConfig accepts a bare-array menu", () => {

@@ -63,26 +63,31 @@ function generate(config, app, { platforms, dryRun }) {
   plan.forEach((s, i) => log(`  ${i + 1}. ${s.desc}`));
   if (dryRun) { log("dry-run: nothing executed"); return; }
 
-  if (!config.base?.buildCommand || !config.base?.distDir) {
-    throw new Error(
-      "no shared web base configured (cobdappkit was removed). Set generator.config.json > base.buildCommand and base.distDir to the web shell before a real run.",
-    );
-  }
   if (!config.cdnManifest) {
     throw new Error(
-      "no cdnManifest configured. Set generator.config.json > cdnManifest to the clf-core CDN manifest (URLs + integrity) the oister shell loads.",
+      "no cdnManifest configured. Set generator.config.json > cdnManifest to the clf CDN manifest (run `npm run sync-cdn` to generate shared/cdn.json).",
     );
   }
   const cdn = readJson(join(PKG_DIR, config.cdnManifest));
+  // The shared web base is optional: the oister shell is now self-
+  // contained (it loads the CLF runtime from the CDN and the app
+  // itself in an iframe), so an app needs no separate built web
+  // base. When base IS configured, its dist is laid down first and
+  // the generated index.html overwrites any the base shipped.
+  const hasBase = Boolean(config.base?.buildCommand && config.base?.distDir);
 
   const out = join(PKG_DIR, config.outDir, app);
   const www = join(out, "www");
 
-  // 1. clean  2. build base web  3. assemble webDir
+  // 1. clean  2. (optional) build base web  3. assemble webDir
   rmSync(out, { recursive: true, force: true });
   mkdirSync(www, { recursive: true });
-  sh("npm", ["run", "build", "-w", config.base.package], resolve(PKG_DIR, "..", ".."));
-  cpSync(resolve(PKG_DIR, config.base.distDir), www, { recursive: true });
+  if (hasBase) {
+    sh("npm", ["run", "build", "-w", config.base.package], resolve(PKG_DIR, "..", ".."));
+    cpSync(resolve(PKG_DIR, config.base.distDir), www, { recursive: true });
+  } else {
+    log("no shared web base configured — emitting the oister shell only (index.html + brand/menu)");
+  }
   cpSync(join(dir, "menu.json"), join(www, "menu.json"));
   writeFileSync(join(www, "brand.json"), JSON.stringify(brand) + "\n");
   // Render the oister umbrella-shell index.html from this app's

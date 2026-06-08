@@ -9,6 +9,7 @@
   },
   "appsDir": "apps",
   "sharedOverlay": "shared/overlay.json",
+  "cdnBase": "https://cdn.blindhub.ca",
   "cdnManifest": "shared/cdn.json",
   "outDir": ".generated"
 }

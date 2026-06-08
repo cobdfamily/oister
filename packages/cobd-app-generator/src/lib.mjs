@@ -69,6 +69,42 @@ export function validateConfig(config) {
   return { ...config, platforms };
 }
 
+// Which CDN manifest component each shell asset lives in, and its
+// filename under that component's versioned path. Mirrors how
+// clf-factory lays out the bundle (clf-core/<ver>/, clf-assets/
+// cf<ver>/, ionic/<ver>/, ionicons/<ver>/).
+const CDN_ASSETS = {
+  tokensCss:        ["clfCommon", "tokens.css"],
+  componentsJs:     ["clfCommon", "components/index.js"],
+  fontScalePaintJs: ["clfCommon", "theming/font-scale-paint.js"],
+  chromeCss:        ["clfFactoryChrome", "chrome.css"],
+  printCss:         ["clfFactoryChrome", "print.css"],
+  ionicCss:         ["ionic", "ionic.bundle.css"],
+  ionicEsm:         ["ionic", "ionic.esm.js"],
+  ioniconsEsm:      ["ionicons", "ionicons.esm.js"],
+};
+
+/**
+ * Build the eight oister-shell asset URLs from a parsed clf CDN
+ * manifest.json (the one served at cdn.blindhub.ca/manifest.json).
+ * Version paths come from the manifest, so a clf release just shifts
+ * the resolved URLs -- nothing here is hardcoded per version.
+ * Returns { <asset>: { url } }; sync-cdn adds the SRI after fetching.
+ */
+export function cdnUrlsFromManifest(manifest, base) {
+  const root = String(base ?? "").replace(/\/$/, "");
+  if (!root) throw new Error("cdnUrlsFromManifest: base url required");
+  const out = {};
+  for (const [asset, [component, file]] of Object.entries(CDN_ASSETS)) {
+    const path = manifest?.components?.[component]?.path;
+    if (typeof path !== "string" || path === "") {
+      throw new Error(`cdn manifest: missing component "${component}"`);
+    }
+    out[asset] = { url: `${root}/${path}${file}` };
+  }
+  return out;
+}
+
 /**
  * The ordered plan for regenerating one app. Returned as plain step descriptors
  * so the CLI can log them (and --dry-run can print them) before executing.
@@ -79,7 +115,7 @@ export function planSteps({ config, app, brand }) {
   const platforms = config.platforms.join(", ");
   return [
     { id: "clean", desc: `wipe ${config.outDir}/${app} (native projects are disposable)` },
-    { id: "build-web", desc: `build base web: ${config.base?.buildCommand || "(base not configured — see generator.config.json)"}` },
+    { id: "build-web", desc: `build base web: ${config.base?.buildCommand || "(no base configured — oister shell only)"}` },
     { id: "assemble-web", desc: `copy base dist + overlay assets (menu.json, brand.json) into webDir; render index.html from brand/menu/seo via @cobdfamily/oister` },
     { id: "scaffold", desc: `write package.json (Capacitor pinned ${ver}) + capacitor.config.ts (appId=${brand.appId}, appName=${brand.appName})` },
     { id: "install", desc: `npm install in the ephemeral project` },

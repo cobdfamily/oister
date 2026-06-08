@@ -167,7 +167,7 @@
         {{/each}}
       </ul>
       <div id="iframe">
-        <iframe name="app"></iframe>
+        <iframe name="app"{{#if app.url}} src="{{app.url}}"{{/if}}></iframe>
       </div>
     </cobd-app-shell>
   </ion-app>

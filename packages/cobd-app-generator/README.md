@@ -1,13 +1,14 @@
 # @cobdfamily/cobd-app-generator
 
-Generates the family of near-identical Capacitor apps from **one shared web
-base** plus a tiny **per-app overlay**. The apps differ only by **identifier**,
-**icon**, and **`menu.json`** — everything else is the base.
+Generates the family of near-identical Capacitor apps. Each app's web layer is
+the **oister umbrella shell** (rendered from its `brand.json` + `menu.json` +
+`seo.json` via [`@cobdfamily/oister`](../oister)); the apps differ only by
+**identifier**, **icon**, **menu**, and **SEO/branding**.
 
-> The shared web base is **not configured yet** — set `base` in
-> `generator.config.json` (the former `cobdappkit` package was removed). Until
-> then, `--list`/`--dry-run` and the tests work, but a real generation run will
-> stop with a clear error.
+> The shared web `base` is **optional** — the oister shell is self-contained
+> (it loads the CLF runtime from the CDN and the app itself in an `<iframe>`), so
+> with `base` unset the generator emits the shell only. Set `base` in
+> `generator.config.json` if an app needs extra built web assets in its `webDir`.
 
 This is **approach D**: native `android/`/`ios/` projects are *disposable*. They
 aren't committed; they're regenerated from scratch at a **pinned** Capacitor
@@ -49,20 +50,36 @@ native overlay → `@capacitor/assets` (icon/splash from `icon.png`) → `cap sy
 The result in `.generated/<app>/` is ready to build + sign.
 
 > The generated `index.html` is the oister umbrella shell: the app's `menu.json`
-> becomes the side-menu nav, `brand.json` the title + theme colour, and `seo.json`
-> the page metadata. It overwrites any `index.html` the base dist ships — the
-> shell is the entry point.
+> becomes the side-menu nav, `brand.json` the title + theme colour + the iframe's
+> `appUrl`, and `seo.json` the page metadata. It overwrites any `index.html` the
+> base dist ships — the shell is the entry point.
 
 > The `cap add` / asset / sync steps need the native toolchains (Android SDK,
 > Xcode, CocoaPods). `--dry-run` and the `npm test` logic run anywhere.
+
+## Keeping the CDN manifest current
+
+`shared/cdn.json` holds the URLs + SRI integrity for the CLF assets the shell
+loads. The CDN paths are **versioned** (`clf-core/<ver>/`, `clf-assets/cf<ver>/`),
+so they change on every clf release — don't hand-edit. Refresh them with:
+
+```sh
+npm run sync-cdn        # fetches cdn.blindhub.ca/manifest.json, recomputes SRI
+```
+
+It reads the live CDN manifest, builds the eight asset URLs from its version
+paths, fetches each asset to compute its `sha384` integrity, and rewrites
+`shared/cdn.json`. Run it after a clf-core / clf-factory release.
 
 ## Adding / changing an app
 
 - New app → add `apps/<id>/` with `brand.json`, `menu.json`, `seo.json`, `icon.png`.
 - Different menu → edit that app's `menu.json`.
+- Different page metadata → edit that app's `seo.json`.
+- Which web UI the shell loads → set `extra.appUrl` in that app's `brand.json`.
 - Different icon → replace that app's `icon.png`.
-- Shared change → edit the shared web base or `shared/overlay.json`; every app
-  inherits it on next regen. Nothing to sync by hand.
+- Shared change → edit `shared/overlay.json` (native) or re-run `sync-cdn`
+  (CDN assets); every app inherits it on next regen.
 
 ## Signing (survives regeneration)
 

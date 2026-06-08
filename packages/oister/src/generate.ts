@@ -114,6 +114,7 @@ export function appToConfig(input: AppInput): OisterConfig {
         nav: {
             items: items.map((i) => ({ label: i.label, href: i.target })),
         },
+        app: { url: brand.extra?.appUrl ?? "" },
         cdn,
     };
 }
