@@ -42,6 +42,23 @@ export function validateMenu(menu, appName) {
   return items;
 }
 
+/**
+ * Validate an app's seo.json: the page/site metadata the oister
+ * shell needs beyond branding + nav. description/url/image are
+ * required (no sane default); the rest is filled by @cobdfamily/
+ * oister's renderApp from brand-derived or COBD defaults.
+ */
+export function validateSeo(seo, appName) {
+  const where = `apps/${appName ?? "?"}/seo.json`;
+  if (!seo || typeof seo !== "object") throw new Error(`${where}: not an object`);
+  for (const key of ["description", "url", "image"]) {
+    if (typeof seo[key] !== "string" || seo[key].trim() === "") {
+      throw new Error(`${where}: "${key}" is required`);
+    }
+  }
+  return seo;
+}
+
 /** Validate the top-level generator config. */
 export function validateConfig(config) {
   if (typeof config?.capacitorVersion !== "string") throw new Error("generator.config.json: capacitorVersion required");
@@ -63,7 +80,7 @@ export function planSteps({ config, app, brand }) {
   return [
     { id: "clean", desc: `wipe ${config.outDir}/${app} (native projects are disposable)` },
     { id: "build-web", desc: `build base web: ${config.base?.buildCommand || "(base not configured — see generator.config.json)"}` },
-    { id: "assemble-web", desc: `copy base dist + overlay assets (menu.json, brand.json) into webDir` },
+    { id: "assemble-web", desc: `copy base dist + overlay assets (menu.json, brand.json) into webDir; render index.html from brand/menu/seo via @cobdfamily/oister` },
     { id: "scaffold", desc: `write package.json (Capacitor pinned ${ver}) + capacitor.config.ts (appId=${brand.appId}, appName=${brand.appName})` },
     { id: "install", desc: `npm install in the ephemeral project` },
     { id: "cap-add", desc: `npx cap add ${platforms}` },

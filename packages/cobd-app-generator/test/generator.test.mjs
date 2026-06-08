@@ -1,9 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { renderApp } from "@cobdfamily/oister";
+
 import {
   planSteps, renderCapacitorConfig, renderProjectPackageJson,
-  validateBrand, validateConfig, validateMenu,
+  validateBrand, validateConfig, validateMenu, validateSeo,
 } from "../src/lib.mjs";
 
 test("validateBrand accepts a reverse-DNS appId and requires appName", () => {
@@ -19,6 +21,38 @@ test("validateMenu accepts array or { items } and requires label+target", () => 
   assert.equal(validateMenu({ items: [{ label: "A", target: "/a" }] }).length, 1);
   assert.throws(() => validateMenu([{ label: "no target" }]), /target/);
   assert.throws(() => validateMenu("nope"), /expected an array/);
+});
+
+test("validateSeo requires description, url and image", () => {
+  const seo = { description: "d", url: "https://x/", image: "https://x/og.png" };
+  assert.equal(validateSeo(seo, "x"), seo);
+  assert.throws(() => validateSeo({ url: "https://x/", image: "i" }, "x"), /"description" is required/);
+  assert.throws(() => validateSeo({ description: "d", image: "i" }, "x"), /"url" is required/);
+  assert.throws(() => validateSeo("nope", "x"), /not an object/);
+});
+
+test("renderApp turns brand + menu + seo + cdn into the shell index.html", () => {
+  // The assemble-web wiring: the exact data path bin/gen.mjs feeds
+  // into @cobdfamily/oister to produce www/index.html.
+  const brand = validateBrand({ appId: "ca.cobd.app.alpha", appName: "Alpha", extra: { themeColor: "#abcdef" } }, "alpha");
+  const menu = validateMenu({ items: [{ label: "Home", target: "/welcome" }] }, "alpha");
+  const seo = validateSeo({ description: "d", url: "https://x/", image: "https://x/og.png" }, "alpha");
+  const cdn = {
+    tokensCss: { url: "https://cdn.blindhub.ca/clf-assets/tokens.css" },
+    printCss: { url: "https://cdn.blindhub.ca/clf-assets/print.css" },
+    chromeCss: { url: "https://cdn.blindhub.ca/clf-assets/chrome.css" },
+    ionicCss: { url: "https://cdn.blindhub.ca/ionic/8/ionic.bundle.css" },
+    ionicEsm: { url: "https://cdn.blindhub.ca/ionic/8/ionic.esm.js" },
+    ioniconsEsm: { url: "https://cdn.blindhub.ca/ionicons/8/ionicons.esm.js" },
+    fontScalePaintJs: { url: "https://cdn.blindhub.ca/clf-assets/font-scale-paint.js" },
+    componentsJs: { url: "https://cdn.blindhub.ca/clf-core/components/index.js" },
+  };
+  const html = renderApp({ brand, menu, seo, cdn });
+  assert.match(html, /^<!DOCTYPE html>/);
+  assert.match(html, /<title>Alpha<\/title>/);            // brand.appName
+  assert.match(html, /content="#abcdef"/);                // brand.extra.themeColor
+  assert.match(html, /<a href="\/welcome">Home<\/a>/);    // menu.target -> href
+  assert.doesNotMatch(html, /\{\{/);
 });
 
 test("validateConfig defaults platforms and rejects unknown ones", () => {

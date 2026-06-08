@@ -9,5 +9,6 @@
   },
   "appsDir": "apps",
   "sharedOverlay": "shared/overlay.json",
+  "cdnManifest": "shared/cdn.json",
   "outDir": ".generated"
 }

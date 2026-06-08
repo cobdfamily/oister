@@ -11,5 +11,8 @@
   "scripts": {
     "gen": "node bin/gen.mjs",
     "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@cobdfamily/oister": "*"
   }
 }

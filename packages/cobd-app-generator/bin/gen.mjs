@@ -19,9 +19,11 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { renderApp } from "@cobdfamily/oister";
+
 import {
   planSteps, readJson, renderCapacitorConfig, renderProjectPackageJson,
-  validateBrand, validateConfig, validateMenu,
+  validateBrand, validateConfig, validateMenu, validateSeo,
 } from "../src/lib.mjs";
 
 const PKG_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -45,15 +47,16 @@ function loadApp(config, app) {
   const dir = join(PKG_DIR, config.appsDir, app);
   if (!existsSync(dir)) throw new Error(`unknown app "${app}" — try --list`);
   const brand = validateBrand(readJson(join(dir, "brand.json")), app);
-  validateMenu(readJson(join(dir, "menu.json")), app); // throws if bad
+  const menu = validateMenu(readJson(join(dir, "menu.json")), app); // throws if bad
+  const seo = validateSeo(readJson(join(dir, "seo.json")), app);
   if (!existsSync(join(dir, "icon.png"))) {
     log(`WARNING: apps/${app}/icon.png missing — @capacitor/assets will fail until you add a ≥1024px icon`);
   }
-  return { dir, brand };
+  return { dir, brand, menu, seo };
 }
 
 function generate(config, app, { platforms, dryRun }) {
-  const { dir, brand } = loadApp(config, app);
+  const { dir, brand, menu, seo } = loadApp(config, app);
   const plan = planSteps({ config, app, brand });
 
   log(`app "${app}"  →  ${brand.appName} (${brand.appId})  [${platforms.join(", ")}]`);
@@ -65,6 +68,12 @@ function generate(config, app, { platforms, dryRun }) {
       "no shared web base configured (cobdappkit was removed). Set generator.config.json > base.buildCommand and base.distDir to the web shell before a real run.",
     );
   }
+  if (!config.cdnManifest) {
+    throw new Error(
+      "no cdnManifest configured. Set generator.config.json > cdnManifest to the clf-core CDN manifest (URLs + integrity) the oister shell loads.",
+    );
+  }
+  const cdn = readJson(join(PKG_DIR, config.cdnManifest));
 
   const out = join(PKG_DIR, config.outDir, app);
   const www = join(out, "www");
@@ -76,6 +85,10 @@ function generate(config, app, { platforms, dryRun }) {
   cpSync(resolve(PKG_DIR, config.base.distDir), www, { recursive: true });
   cpSync(join(dir, "menu.json"), join(www, "menu.json"));
   writeFileSync(join(www, "brand.json"), JSON.stringify(brand) + "\n");
+  // Render the oister umbrella-shell index.html from this app's
+  // brand + menu + seo + the shared CDN manifest. Overwrites any
+  // index.html the base dist shipped: the shell is the entry point.
+  writeFileSync(join(www, "index.html"), renderApp({ brand, menu, seo, cdn }));
 
   // 4. scaffold ephemeral project
   writeFileSync(join(out, "package.json"), renderProjectPackageJson(brand, config));

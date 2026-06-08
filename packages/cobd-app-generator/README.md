@@ -20,10 +20,12 @@ checked-in native projects to migrate.
 ```
 generator.config.json     pinned Capacitor version, platforms, base ref   ← bump to upgrade ALL apps
 shared/overlay.json       native config shared by every app (iOS Info.plist keys, Android perms)
+shared/cdn.json           CDN/SRI manifest the oister shell loads (URLs + integrity)
 apps/<id>/
-  brand.json              { appId, appName }            ← the identifier
+  brand.json              { appId, appName, extra }     ← the identifier + theme colour
   icon.png                ≥1024px source                ← the icon (you add this)
   menu.json               nav items                     ← the menu asset
+  seo.json                page/site metadata            ← title/description/url/image/og
 bin/gen.mjs               the generator CLI
 src/lib.mjs               pure, tested core logic
 templates/                signing + CI (match, exportOptions, gradle, workflow)
@@ -40,17 +42,23 @@ node bin/gen.mjs --all                    # regenerate every app
 ```
 
 Each run: build base web → assemble webDir (base dist + this app's `menu.json` +
-`brand.json`) → scaffold an ephemeral project at the pinned version →
-`npm install` → `cap add` → apply the shared native overlay → `@capacitor/assets`
-(icon/splash from `icon.png`) → `cap sync`. The result in `.generated/<app>/` is
-ready to build + sign.
+`brand.json`, and render `index.html` from `brand.json` + `menu.json` + `seo.json`
++ `shared/cdn.json` via [`@cobdfamily/oister`](../oister)) → scaffold an ephemeral
+project at the pinned version → `npm install` → `cap add` → apply the shared
+native overlay → `@capacitor/assets` (icon/splash from `icon.png`) → `cap sync`.
+The result in `.generated/<app>/` is ready to build + sign.
+
+> The generated `index.html` is the oister umbrella shell: the app's `menu.json`
+> becomes the side-menu nav, `brand.json` the title + theme colour, and `seo.json`
+> the page metadata. It overwrites any `index.html` the base dist ships — the
+> shell is the entry point.
 
 > The `cap add` / asset / sync steps need the native toolchains (Android SDK,
 > Xcode, CocoaPods). `--dry-run` and the `npm test` logic run anywhere.
 
 ## Adding / changing an app
 
-- New app → add `apps/<id>/` with `brand.json`, `menu.json`, `icon.png`.
+- New app → add `apps/<id>/` with `brand.json`, `menu.json`, `seo.json`, `icon.png`.
 - Different menu → edit that app's `menu.json`.
 - Different icon → replace that app's `icon.png`.
 - Shared change → edit the shared web base or `shared/overlay.json`; every app

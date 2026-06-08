@@ -1,0 +1,35 @@
+{
+  "$comment": "CDN/SRI manifest the oister shell loads, shared by every generated app. The integrityAttr strings are pinned from the clf-core CDN's SRI manifest (cdn.blindhub.ca) and should be refreshed when clf-core releases a new bundle; leave \"\" to ship without SRI. URLs + integrity feed @cobdfamily/oister's renderApp -> each app's www/index.html.",
+  "tokensCss": {
+    "url": "https://cdn.blindhub.ca/clf-assets/tokens.css",
+    "integrityAttr": ""
+  },
+  "printCss": {
+    "url": "https://cdn.blindhub.ca/clf-assets/print.css",
+    "integrityAttr": ""
+  },
+  "chromeCss": {
+    "url": "https://cdn.blindhub.ca/clf-assets/chrome.css",
+    "integrityAttr": ""
+  },
+  "ionicCss": {
+    "url": "https://cdn.blindhub.ca/ionic/8/ionic.bundle.css",
+    "integrityAttr": ""
+  },
+  "ionicEsm": {
+    "url": "https://cdn.blindhub.ca/ionic/8/ionic.esm.js",
+    "integrityAttr": ""
+  },
+  "ioniconsEsm": {
+    "url": "https://cdn.blindhub.ca/ionicons/8/ionicons.esm.js",
+    "integrityAttr": ""
+  },
+  "fontScalePaintJs": {
+    "url": "https://cdn.blindhub.ca/clf-assets/font-scale-paint.js",
+    "integrityAttr": ""
+  },
+  "componentsJs": {
+    "url": "https://cdn.blindhub.ca/clf-core/components/index.js",
+    "integrityAttr": ""
+  }
+}
