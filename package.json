@@ -2,10 +2,10 @@
   "name": "@cobdfamily/clam",
   "version": "0.0.0",
   "private": true,
-  "description": "Native-bridge toolkit for the cobdfamily super-app shell (cobdcorekit + cobdhostkit).",
+  "description": "Native-bridge toolkit for the cobdfamily super-app shell (cobdcorekit).",
   "license": "AGPL-3.0",
   "scripts": {
-    "build": "npm run build -w @cobdfamily/cobdcorekit && npm run build -w @cobdfamily/cobdhostkit",
+    "build": "npm run build -w @cobdfamily/cobdcorekit",
     "test": "npm test --workspaces --if-present"
   },
   "workspaces": [
