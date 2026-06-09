@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { renderApp } from "@cobdfamily/oister";
 
 import {
-  addKnownRegions, allowNavigation, appDomains, appsOrigin,
+  absolutizeAsset, addKnownRegions, allowNavigation, appDomains, appsOrigin,
   cdnUrlsFromManifest, collectPermissions, planSteps,
   renderCapacitorConfig, renderProjectPackageJson, renderSwsConfig,
   renderSwsDockerfile, validateApps, validateBrand, validateConfig,
@@ -132,6 +132,15 @@ test("appDomains + allowNavigation read brand.extra and build nav patterns", () 
   assert.deepEqual(appDomains({}), []);
   assert.deepEqual(allowNavigation(["bowencommunity.ca"]),
     ["bowencommunity.ca", "*.bowencommunity.ca"]);
+});
+
+test("absolutizeAsset resolves relative paths, passes absolute/empty through", () => {
+  const o = "https://apps.bowencommunity.ca";
+  assert.equal(absolutizeAsset("assets/logo.svg", o), "https://apps.bowencommunity.ca/assets/logo.svg");
+  assert.equal(absolutizeAsset("/assets/og.png", o), "https://apps.bowencommunity.ca/assets/og.png");
+  assert.equal(absolutizeAsset("https://cdn.x/og.png", o), "https://cdn.x/og.png"); // absolute untouched
+  assert.equal(absolutizeAsset("assets/logo.svg", ""), "assets/logo.svg"); // no origin -> unchanged
+  assert.equal(absolutizeAsset("", o), "");
 });
 
 test("appsOrigin is apps.<primary domain>", () => {

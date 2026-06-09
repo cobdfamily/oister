@@ -1,0 +1,23 @@
+{
+  "appId": "ca.bowencommunity.apps.core",
+  "appName": "Bowen Community",
+  "extra": {
+    "themeColor": "#31d53d",
+    "domains": ["bowencommunity.ca"],
+    "capabilities": ["location", "notifications"]
+  },
+  "seo": {
+    "description": "Bowen Community — news, services, and connection.",
+    "url": "https://bowencommunity.ca/",
+    "image": "assets/logo.svg",
+    "author": "Bowen Community",
+    "themeColorDark": "#1f2933",
+    "org": {
+      "url": "https://bowencommunity.ca/",
+      "logoUrl": "assets/logo.svg"
+    },
+    "social": {
+      "twitterHandle": "@bowencommunity"
+    }
+  }
+}

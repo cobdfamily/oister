@@ -65,13 +65,14 @@ export function validateApps(apps, appName) {
 }
 
 /**
- * Validate an app's seo.json: the page/site metadata the oister
- * shell needs beyond branding + nav. description/url/image are
- * required (no sane default); the rest is filled by @cobdfamily/
- * oister's renderApp from brand-derived or COBD defaults.
+ * Validate an app's SEO metadata (the `seo` block of brand.json):
+ * the page/site metadata the oister shell needs beyond branding +
+ * nav. description/url/image are required (no sane default); the rest
+ * is filled by @cobdfamily/oister's renderApp from brand-derived or
+ * COBD defaults.
  */
 export function validateSeo(seo, appName) {
-  const where = `apps/${appName ?? "?"}/seo.json`;
+  const where = `apps/${appName ?? "?"}/brand.json (seo)`;
   if (!seo || typeof seo !== "object") throw new Error(`${where}: not an object`);
   for (const key of ["description", "url", "image"]) {
     if (typeof seo[key] !== "string" || seo[key].trim() === "") {
@@ -276,6 +277,19 @@ export function allowNavigation(domains) {
  */
 export function appsOrigin(domains) {
   return domains.length ? `https://apps.${domains[0]}` : "";
+}
+
+/**
+ * Make an asset reference absolute against an origin when it's a
+ * relative path (e.g. "assets/logo.svg" -> "<origin>/assets/logo.svg").
+ * Absolute URLs (http(s):// or //) and empty values pass through. Used
+ * for og:image + the JSON-LD logo, which external crawlers can't
+ * resolve relatively; in-app references (grid icons) stay relative.
+ */
+export function absolutizeAsset(value, origin) {
+  if (!value || !origin) return value;
+  if (/^https?:\/\//i.test(value) || value.startsWith("//")) return value;
+  return `${origin.replace(/\/$/, "")}/${value.replace(/^\//, "")}`;
 }
 
 export function renderCapacitorConfig(brand) {

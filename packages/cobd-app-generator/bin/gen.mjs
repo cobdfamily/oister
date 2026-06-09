@@ -22,10 +22,10 @@ import { fileURLToPath } from "node:url";
 import { loadAsset, renderApp, STATIC_ASSETS } from "@cobdfamily/oister";
 
 import {
-  addKnownRegions, appDomains, collectPermissions, planSteps, readJson,
-  renderCapacitorConfig, renderProjectPackageJson, renderSwsConfig,
-  renderSwsDockerfile, validateApps, validateBrand, validateConfig,
-  validateMenu, validateSeo,
+  absolutizeAsset, addKnownRegions, appDomains, appsOrigin,
+  collectPermissions, planSteps, readJson, renderCapacitorConfig,
+  renderProjectPackageJson, renderSwsConfig, renderSwsDockerfile,
+  validateApps, validateBrand, validateConfig, validateMenu, validateSeo,
 } from "../src/lib.mjs";
 
 const PKG_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -48,9 +48,10 @@ function listApps(config) {
 function loadApp(config, app) {
   const dir = join(PKG_DIR, config.appsDir, app);
   if (!existsSync(dir)) throw new Error(`unknown app "${app}" — try --list`);
-  const brand = validateBrand(readJson(join(dir, "brand.json")), app);
+  const rawBrand = readJson(join(dir, "brand.json"));
+  const brand = validateBrand(rawBrand, app);
   const menu = validateMenu(readJson(join(dir, "menu.json")), app); // throws if bad
-  const seo = validateSeo(readJson(join(dir, "seo.json")), app);
+  const seo = validateSeo(rawBrand.seo, app); // seo lives in brand.json now
   validateApps(readJson(join(dir, "apps.json")), app); // launcher tiles; throws if bad
   if (!existsSync(join(dir, "icon.png"))) {
     log(`WARNING: apps/${app}/icon.png missing — @capacitor/assets will fail until you add a ≥1024px icon`);
@@ -99,11 +100,27 @@ function generate(config, app, { platforms, dryRun }) {
   cpSync(join(dir, "menu.json"), join(www, "menu.json"));
   cpSync(join(dir, "apps.json"), join(www, "apps.json")); // launcher tiles for <cobd-apps-grid>
   writeFileSync(join(www, "brand.json"), JSON.stringify(brand) + "\n");
-  // Render the oister umbrella-shell index.html from this app's
-  // brand + menu + seo + the CDN manifest. The grid fetches its tiles
-  // from the copied apps.json (renderApp's default apps.path). Overwrites
-  // any index.html the base dist shipped: the shell is the entry point.
-  writeFileSync(join(www, "index.html"), renderApp({ brand, menu, seo, cdn }));
+  // Per-app static assets (icons, logo, og image) -> webDir/assets/,
+  // so branding is self-hosted (served from apps.<domain>, SW-cached).
+  const assetsDir = join(dir, "assets");
+  if (existsSync(assetsDir)) cpSync(assetsDir, join(www, "assets"), { recursive: true });
+
+  // og:image + the JSON-LD logo must be absolute for external crawlers,
+  // so resolve relative asset paths against apps.<domain>; in-app refs
+  // (grid icons) stay relative.
+  const origin = appsOrigin(appDomains(brand));
+  const seoForRender = {
+    ...seo,
+    image: absolutizeAsset(seo.image, origin),
+    org: seo.org
+      ? { ...seo.org, logoUrl: absolutizeAsset(seo.org.logoUrl, origin) }
+      : seo.org,
+  };
+  // Render the oister umbrella-shell index.html from this app's brand +
+  // menu + seo + the CDN manifest. The grid fetches its tiles from the
+  // copied apps.json (renderApp's default apps.path). Overwrites any
+  // index.html the base dist shipped: the shell is the entry point.
+  writeFileSync(join(www, "index.html"), renderApp({ brand, menu, seo: seoForRender, cdn }));
   // Offline support: the service worker, its registration script, and
   // the offline fallback page, served from the webDir root.
   for (const name of STATIC_ASSETS) writeFileSync(join(www, name), loadAsset(name));

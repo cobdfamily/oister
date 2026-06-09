@@ -1,0 +1,23 @@
+{
+  "appId": "ca.cobd.apps.core",
+  "appName": "COBD",
+  "extra": {
+    "themeColor": "#31d53d",
+    "domains": ["cobd.ca"],
+    "capabilities": ["location", "camera", "photos", "notifications"]
+  },
+  "seo": {
+    "description": "The Community of Bowen Drive app.",
+    "url": "https://cobd.ca/",
+    "image": "assets/logo.svg",
+    "author": "Community of Bowen Drive",
+    "themeColorDark": "#1f2933",
+    "org": {
+      "url": "https://cobd.ca/",
+      "logoUrl": "assets/logo.svg"
+    },
+    "social": {
+      "twitterHandle": "@cobd"
+    }
+  }
+}

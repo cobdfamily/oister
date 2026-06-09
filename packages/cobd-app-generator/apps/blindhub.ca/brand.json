@@ -1,0 +1,23 @@
+{
+  "appId": "ca.blindhub.apps.core",
+  "appName": "BlindHub",
+  "extra": {
+    "themeColor": "#1d6fd5",
+    "domains": ["blindhub.ca"],
+    "capabilities": ["location", "camera", "notifications"]
+  },
+  "seo": {
+    "description": "BlindHub — accessible community services.",
+    "url": "https://blindhub.ca/",
+    "image": "assets/logo.svg",
+    "author": "BlindHub",
+    "themeColorDark": "#1f2933",
+    "org": {
+      "url": "https://blindhub.ca/",
+      "logoUrl": "assets/logo.svg"
+    },
+    "social": {
+      "twitterHandle": "@blindhub"
+    }
+  }
+}

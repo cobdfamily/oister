@@ -23,11 +23,11 @@ generator.config.json     pinned Capacitor version, platforms, base ref   ← bu
 shared/overlay.json       DEPRECATED — permissions are now per-app (brand extra.capabilities)
 shared/cdn.json           CDN/SRI manifest the oister shell loads (URLs + integrity)
 apps/<id>/
-  brand.json              { appId, appName, extra }     ← identifier + theme + capabilities + domains
-  icon.png                ≥1024px source                ← the icon (you add this)
+  brand.json              { appId, appName, extra, seo } ← identity + theme + domains + capabilities + page metadata
+  icon.png                ≥1024px source                ← the app icon (you add this)
   menu.json               side-drawer nav items         ← {label, target}
   apps.json               home-screen launcher tiles    ← {label, href, icon} for <cobd-apps-grid>
-  seo.json                page/site metadata            ← title/description/url/image/og
+  assets/                 per-app static files          ← logo / og image, copied to webDir/assets/ (self-hosted)
 bin/gen.mjs               the generator CLI
 src/lib.mjs               pure, tested core logic
 templates/                signing + CI (match, exportOptions, gradle, workflow)
@@ -114,10 +114,11 @@ paths, fetches each asset to compute its `sha384` integrity, and rewrites
 
 ## Adding / changing an app
 
-- New app → add `apps/<id>/` with `brand.json`, `menu.json`, `apps.json`, `seo.json`, `icon.png`.
+- New app → add `apps/<id>/` with `brand.json` (incl. its `seo` block), `menu.json`, `apps.json`, `icon.png`, and an `assets/` dir for branding.
 - Different launcher tiles → edit that app's `apps.json` (the home-screen grid).
 - Different side-drawer nav → edit that app's `menu.json`.
-- Different page metadata → edit that app's `seo.json`.
+- Different page metadata → edit the `seo` block in that app's `brand.json`.
+- Logo / og image → drop files in `apps/<id>/assets/` and reference them as `assets/…` (the generator self-hosts them and absolutizes og:image/logo to `apps.<domain>`).
 - Which web UI the shell loads → set `extra.appUrl` in that app's `brand.json`.
 - Different icon → replace that app's `icon.png`.
 - Shared change → edit `shared/overlay.json` (native) or re-run `sync-cdn`
