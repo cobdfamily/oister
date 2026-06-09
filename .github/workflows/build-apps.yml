@@ -37,8 +37,10 @@ jobs:
         with: { distribution: temurin, java-version: "21" }   # Capacitor 8 -> JDK 21
       - uses: android-actions/setup-android@v3
 
-      - name: Install generator deps
-        run: npm install
+      - name: Install + build workspace packages
+        run: |
+          npm install
+          npm run build -w @cobdfamily/cobdcorekit -w @cobdfamily/cobd-apps-grid -w @cobdfamily/oister
 
       - name: Regenerate ${{ matrix.app }} (android)
         working-directory: packages/cobd-app-generator
@@ -88,8 +90,10 @@ jobs:
       - name: Xcode version
         run: xcodebuild -version
 
-      - name: Install generator deps
-        run: npm install
+      - name: Install + build workspace packages
+        run: |
+          npm install
+          npm run build -w @cobdfamily/cobdcorekit -w @cobdfamily/cobd-apps-grid -w @cobdfamily/oister
 
       - name: Regenerate ${{ matrix.app }} (ios)
         working-directory: packages/cobd-app-generator
