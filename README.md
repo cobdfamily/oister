@@ -1,7 +1,7 @@
-# oister
+# clam
 
 The native-bridge toolkit for the cobdfamily super-app shell. A super-app loads
-its child apps into sandboxed iframes; `oister` is how any of that code — inside
+its child apps into sandboxed iframes; `clam` is how any of that code — inside
 an iframe or in the shell itself — reaches native device functionality.
 
 ## The two packages

@@ -1,6 +1,6 @@
 # Regenerate each app from scratch (approach D) and build both platforms.
 #   Android  -> GitHub-hosted Linux (debug APK; signed release gated on secrets)
-#   iOS      -> self-hosted Apple-silicon Mac runner (label: oister), signed
+#   iOS      -> self-hosted Apple-silicon Mac runner (label: clam), signed
 #              with the COBD distribution cert + ASC key that live ON the Mac
 #              (nothing sensitive in GitHub Secrets — mirrors the PlayPalace
 #              TestFlight workflow on the same box).
@@ -52,24 +52,24 @@ jobs:
           npm run build -w @cobdfamily/cobdcorekit -w @cobdfamily/cobd-apps-grid
 
       - name: Regenerate ${{ matrix.app }} (android)
-        working-directory: packages/cobd-app-generator
+        working-directory: packages/clam-app-generator
         run: node bin/gen.mjs "${{ matrix.app }}" --platforms android
 
       - name: Assemble debug APK
-        working-directory: packages/cobd-app-generator/.generated/${{ matrix.app }}/android
+        working-directory: packages/clam-app-generator/.generated/${{ matrix.app }}/android
         run: ./gradlew assembleDebug --no-daemon --console=plain
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.app }}-debug-apk
-          path: packages/cobd-app-generator/.generated/${{ matrix.app }}/android/app/build/outputs/apk/debug/*.apk
+          path: packages/clam-app-generator/.generated/${{ matrix.app }}/android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
       # --- SCAFFOLD: signed release bundle (runs only once the keystore
       # secrets exist; harmless no-op until then) ---
       - name: Assemble signed release bundle
         if: ${{ env.ANDROID_KEYSTORE_B64 != '' }}
-        working-directory: packages/cobd-app-generator/.generated/${{ matrix.app }}/android
+        working-directory: packages/clam-app-generator/.generated/${{ matrix.app }}/android
         env:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -85,7 +85,7 @@ jobs:
 
   # -------------------------------------------------------------------- iOS
   ios:
-    runs-on: [self-hosted, macos, oister]
+    runs-on: [self-hosted, macos, clam]
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -105,7 +105,7 @@ jobs:
           npm run build -w @cobdfamily/cobdcorekit -w @cobdfamily/cobd-apps-grid
 
       - name: Regenerate ${{ matrix.app }} (ios)
-        working-directory: packages/cobd-app-generator
+        working-directory: packages/clam-app-generator
         run: node bin/gen.mjs "${{ matrix.app }}" --platforms ios
 
       # Archive + export in ONE shell step so the login keychain stays unlocked
@@ -114,7 +114,7 @@ jobs:
       # Signing is automatic via the ASC API key (-allowProvisioningUpdates),
       # the only mechanism reachable from a launchd-spawned runner.
       - name: Archive + export (signed)
-        working-directory: packages/cobd-app-generator
+        working-directory: packages/clam-app-generator
         run: |
           set -euo pipefail
           source ~/.config/cobd-deploy/secrets.env
@@ -123,7 +123,7 @@ jobs:
 
           APP="${{ matrix.app }}"
           BUILD_NUMBER="$(date -u +%Y%m%d%H%M%S)"
-          BUILD_DIR="${RUNNER_TEMP}/oister-${APP//\//-}"
+          BUILD_DIR="${RUNNER_TEMP}/clam-${APP//\//-}"
           rm -rf "$BUILD_DIR"; mkdir -p "$BUILD_DIR"
 
           security unlock-keychain -p "$MAC_KEYCHAIN_PASSWORD" ~/Library/Keychains/login.keychain-db
@@ -187,7 +187,7 @@ jobs:
       # once the app records exist. ---
       - name: Upload to TestFlight
         if: ${{ vars.UPLOAD_TESTFLIGHT == '1' }}
-        working-directory: packages/cobd-app-generator
+        working-directory: packages/clam-app-generator
         run: |
           set -euo pipefail
           source ~/.config/cobd-deploy/secrets.env

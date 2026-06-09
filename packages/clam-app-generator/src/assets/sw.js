@@ -1,4 +1,4 @@
-// COBD oister shell service worker — offline support.
+// COBD clam shell service worker — offline support.
 //
 // Precaches the same-origin app shell (the launcher page + its JSON)
 // and runtime-caches everything else (the CLF CDN assets, visited

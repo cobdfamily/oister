@@ -1,5 +1,5 @@
 {
-  "$comment": "Example of the fully-resolved OisterConfig that renderOisterShell consumes. In practice you call renderApp({ brand, menu, seo, cdn }) and let it build this from the per-app files; this file just documents the resolved shape. integrityAttr is the raw SRI/crossorigin attribute string (or \"\" when unhashed).",
+  "$comment": "Example of the fully-resolved ClamConfig that renderClamShell consumes. In practice you call renderApp({ brand, menu, seo, cdn }) and let it build this from the per-app files; this file just documents the resolved shape. integrityAttr is the raw SRI/crossorigin attribute string (or \"\" when unhashed).",
   "site": {
     "lang": "en",
     "title": "COBD",

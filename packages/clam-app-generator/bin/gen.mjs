@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// cobd-app-generator — regenerate a disposable Capacitor project for one app
+// clam-app-generator — regenerate a disposable Capacitor project for one app
 // from the shared web base + that app's overlay (brand.json / menu.json /
 // icon.png), at the pinned Capacitor version. Approach D.
 //
@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 
-import { loadAsset, renderApp, STATIC_ASSETS } from "../src/oister.mjs";
+import { loadAsset, renderApp, STATIC_ASSETS } from "../src/clam.mjs";
 
 import {
   absolutizeAsset, addKnownRegions, appDomains, appsOrigin,
@@ -86,7 +86,7 @@ function generate(config, app, { platforms, dryRun }) {
     ? { url: "cobd-apps-grid/index.js" }
     : config.appsGridJs;
 
-  // The shared web base is optional: the oister shell is now self-
+  // The shared web base is optional: the clam shell is now self-
   // contained (it loads the CLF runtime from the CDN; the launcher
   // grid is its home). When base IS configured, its dist is laid down
   // first and the generated index.html overwrites any the base shipped.
@@ -102,7 +102,7 @@ function generate(config, app, { platforms, dryRun }) {
     sh("npm", ["run", "build", "-w", config.base.package], resolve(PKG_DIR, "..", ".."));
     cpSync(resolve(PKG_DIR, config.base.distDir), www, { recursive: true });
   } else {
-    log("no shared web base configured — emitting the oister shell only (index.html + brand/menu)");
+    log("no shared web base configured — emitting the clam shell only (index.html + brand/menu)");
   }
   cpSync(join(dir, "menu.json"), join(www, "menu.json"));
   cpSync(join(dir, "apps.json"), join(www, "apps.json")); // launcher tiles for <cobd-apps-grid>
@@ -132,7 +132,7 @@ function generate(config, app, { platforms, dryRun }) {
       ? { ...seo.org, logoUrl: absolutizeAsset(seo.org.logoUrl, origin) }
       : seo.org,
   };
-  // Render the oister umbrella-shell index.html from this app's brand +
+  // Render the clam umbrella-shell index.html from this app's brand +
   // menu + seo + the CDN manifest. The grid fetches its tiles from the
   // copied apps.json (renderApp's default apps.path). Overwrites any
   // index.html the base dist shipped: the shell is the entry point.
@@ -143,10 +143,10 @@ function generate(config, app, { platforms, dryRun }) {
 
   // Per-app static-web-server image context (one image per app): the
   // Dockerfile + sws.toml sit beside www/ so the build context is `out`.
-  //   docker build -t cobdfamily/oister-<appId-with-dashes> <out>
+  //   docker build -t cobdfamily/clam-<appId-with-dashes> <out>
   writeFileSync(join(out, "Dockerfile"), renderSwsDockerfile(brand));
   writeFileSync(join(out, "sws.toml"), renderSwsConfig());
-  log(`emitted per-app sws image context -> ${out} (docker build -t cobdfamily/oister-${brand.appId.replace(/\./g, "-")} ${out})`);
+  log(`emitted per-app sws image context -> ${out} (docker build -t cobdfamily/clam-${brand.appId.replace(/\./g, "-")} ${out})`);
 
   // 4. scaffold ephemeral project
   writeFileSync(join(out, "package.json"), renderProjectPackageJson(brand, config));
@@ -304,7 +304,7 @@ const { values, positionals } = parseArgs({
 });
 
 if (values.help) {
-  process.stdout.write(`cobd-app-generator
+  process.stdout.write(`clam-app-generator
   --list                 list available apps
   <app> [--dry-run]      regenerate one app
   --all  [--dry-run]     regenerate every app

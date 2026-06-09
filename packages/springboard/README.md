@@ -3,8 +3,8 @@
 > **ARCHIVED.** This is a frozen snapshot of the former
 > `cobdfamily/bowencommunity-springboard` repository (its tracked source at
 > the time it was retired), kept here for reference. It is intentionally
-> **excluded from the oister npm workspace** (`!packages/springboard` in the
-> root `package.json`) so it does not pull the Angular toolchain into oister's
+> **excluded from the clam npm workspace** (`!packages/springboard` in the
+> root `package.json`) so it does not pull the Angular toolchain into clam's
 > install — run `npm install` inside this directory if you need to build it.
 > The shell's menu now loads the built springboard from
 > `packages/www/public/components/springboard/`.

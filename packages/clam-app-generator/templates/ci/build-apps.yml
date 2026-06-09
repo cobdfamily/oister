@@ -22,10 +22,10 @@ jobs:
         with: { node-version: 22 }
       - run: npm install
       - name: Regenerate ${{ matrix.app }}
-        working-directory: common/oister/packages/cobd-app-generator
+        working-directory: common/clam/packages/clam-app-generator
         run: node bin/gen.mjs ${{ matrix.app }} --platforms android
       - name: Build signed bundle
-        working-directory: common/oister/packages/cobd-app-generator/.generated/${{ matrix.app }}/android
+        working-directory: common/clam/packages/clam-app-generator/.generated/${{ matrix.app }}/android
         env:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -50,10 +50,10 @@ jobs:
         with: { node-version: 22 }
       - run: npm install
       - name: Regenerate ${{ matrix.app }}
-        working-directory: common/oister/packages/cobd-app-generator
+        working-directory: common/clam/packages/clam-app-generator
         run: node bin/gen.mjs ${{ matrix.app }} --platforms ios
       - name: Build + sign (fastlane match)
-        working-directory: common/oister/packages/cobd-app-generator
+        working-directory: common/clam/packages/clam-app-generator
         env:
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}

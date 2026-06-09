@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { renderApp } from "../src/oister.mjs";
+import { renderApp } from "../src/clam.mjs";
 
 import {
   absolutizeAsset, addKnownRegions, allowNavigation, appDomains, appsOrigin,
@@ -36,7 +36,7 @@ test("validateSeo requires description, url and image", () => {
 
 test("renderApp turns brand + menu + seo + cdn into the shell index.html", () => {
   // The assemble-web wiring: the exact data path bin/gen.mjs feeds
-  // into @cobdfamily/oister to produce www/index.html.
+  // into @cobdfamily/clam to produce www/index.html.
   const brand = validateBrand({ appId: "ca.cobd.app.alpha", appName: "Alpha", extra: { themeColor: "#abcdef" } }, "alpha");
   const menu = validateMenu({ items: [{ label: "Home", target: "/welcome" }] }, "alpha");
   const seo = validateSeo({ description: "d", url: "https://x/", image: "https://x/og.png" }, "alpha");
@@ -173,7 +173,7 @@ test("renderSwsConfig + renderSwsDockerfile produce a per-app sws image context"
   const dockerfile = renderSwsDockerfile(brand);
   assert.match(dockerfile, /FROM joseluisq\/static-web-server:2-alpine/);
   assert.match(dockerfile, /COPY www \/public/);
-  assert.match(dockerfile, /cobdfamily\/oister-ca-cobd-app-alpha/); // appId dots -> dashes
+  assert.match(dockerfile, /cobdfamily\/clam-ca-cobd-app-alpha/); // appId dots -> dashes
 });
 
 test("validateConfig defaults platforms and rejects unknown ones", () => {

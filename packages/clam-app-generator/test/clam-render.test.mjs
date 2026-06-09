@@ -1,5 +1,5 @@
-// Tests for the oister shell renderer (src/oister.mjs). Ported from the former
-// @cobdfamily/oister package when it was folded into the generator. The bundled
+// Tests for the clam shell renderer (src/clam.mjs). Ported from the former
+// @cobdfamily/clam package when it was folded into the generator. The bundled
 // template resolves to src/assets/index.html; fixtures live in test/fixtures/.
 
 import test from "node:test";
@@ -9,19 +9,19 @@ import { fileURLToPath } from "node:url";
 
 import {
   renderApp,
-  renderOisterShell,
+  renderClamShell,
   appToConfig,
-  validateOisterConfig,
+  validateClamConfig,
   loadAsset,
   STATIC_ASSETS,
-} from "../src/oister.mjs";
+} from "../src/clam.mjs";
 
 function loadJson(name) {
   const path = fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-const exampleConfig = () => loadJson("oister.example.json");
+const exampleConfig = () => loadJson("clam.example.json");
 const exampleSeo = () => loadJson("seo.example.json");
 
 const BRAND = {
@@ -46,10 +46,10 @@ function exampleAppInput(overrides = {}) {
   };
 }
 
-// ---- renderOisterShell (the resolved-config core) ------------
+// ---- renderClamShell (the resolved-config core) ------------
 
 test("renders the example config into a complete page", () => {
-  const html = renderOisterShell(exampleConfig());
+  const html = renderClamShell(exampleConfig());
   assert.match(html, /^<!DOCTYPE html>/);
   assert.match(html, /<html lang="en">/);
   assert.match(html, /content="COBD"/);           // og:site_name
@@ -59,7 +59,7 @@ test("renders the example config into a complete page", () => {
 });
 
 test("nav items render as a local <ul slot=\"menu\"> + the noscript list", () => {
-  const html = renderOisterShell(exampleConfig());
+  const html = renderClamShell(exampleConfig());
   assert.match(html, /<ul slot="menu">/);
   assert.match(html, /<a href="\/welcome">Home<\/a>/);
   assert.match(html, /<a href="\/about">About<\/a>/);
@@ -69,12 +69,12 @@ test("nav items render as a local <ul slot=\"menu\"> + the noscript list", () =>
 });
 
 test("leaves no unsubstituted handlebars tokens", () => {
-  const html = renderOisterShell(exampleConfig());
+  const html = renderClamShell(exampleConfig());
   assert.doesNotMatch(html, /\{\{/, "found an unrendered {{ token");
 });
 
 test("registers the service worker via an external (CSP-safe) script", () => {
-  const html = renderOisterShell(exampleConfig());
+  const html = renderClamShell(exampleConfig());
   assert.match(html, /<script src="sw-register\.js"><\/script>/);
   assert.doesNotMatch(html, /navigator\.serviceWorker/); // not inline
 });
@@ -87,7 +87,7 @@ test("static offline assets are bundled and loadable", () => {
 });
 
 test("the launcher grid gets its path; its <script> is gated on cdn.appsGridJs", () => {
-  const html = renderOisterShell(exampleConfig());
+  const html = renderClamShell(exampleConfig());
   assert.match(html, /<cobd-apps-grid path="apps\.json" remember><\/cobd-apps-grid>/);
   // appsGridJs is present in the example -> the grid script loads.
   assert.match(html, /src="https:\/\/cdn\.blindhub\.ca\/cobd-apps-grid\/index\.js"/);
@@ -97,11 +97,11 @@ test("the launcher grid gets its path; its <script> is gated on cdn.appsGridJs",
   // Without appsGridJs, the grid <script> is omitted.
   const config = exampleConfig();
   delete config.cdn.appsGridJs;
-  assert.doesNotMatch(renderOisterShell(config), /cobd-apps-grid\/index\.js/);
+  assert.doesNotMatch(renderClamShell(config), /cobd-apps-grid\/index\.js/);
 });
 
 test("integrity attributes are emitted raw, not HTML-escaped", () => {
-  const html = renderOisterShell(exampleConfig());
+  const html = renderClamShell(exampleConfig());
   assert.match(html, /integrity="sha384-EXAMPLE" crossorigin="anonymous"/);
   assert.doesNotMatch(html, /&quot;/);
 });
@@ -109,7 +109,7 @@ test("integrity attributes are emitted raw, not HTML-escaped", () => {
 test("JSON-LD stays valid even when a value contains quotes", () => {
   const config = exampleConfig();
   config.site.author = 'A&B "Quoted" Co.';
-  const html = renderOisterShell(config);
+  const html = renderClamShell(config);
   const block = html.match(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   assert.ok(block, "JSON-LD block present");
@@ -118,17 +118,17 @@ test("JSON-LD stays valid even when a value contains quotes", () => {
   assert.equal(parsed["@type"], "Organization");
 });
 
-test("validateOisterConfig throws on a missing required field", () => {
+test("validateClamConfig throws on a missing required field", () => {
   const config = exampleConfig();
   delete config.site.title;
-  assert.throws(() => validateOisterConfig(config),
+  assert.throws(() => validateClamConfig(config),
     /site\.title is required/);
 });
 
-test("validateOisterConfig throws on a missing CDN url", () => {
+test("validateClamConfig throws on a missing CDN url", () => {
   const config = exampleConfig();
   config.cdn.componentsJs = {};
-  assert.throws(() => renderOisterShell(config),
+  assert.throws(() => renderClamShell(config),
     /cdn\.componentsJs\.url is required/);
 });
 

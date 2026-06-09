@@ -1,8 +1,8 @@
 # @cobdfamily/www (temporary)
 
-The **bowencommunity-core umbrella shell**, vendored into oister with all of
+The **bowencommunity-core umbrella shell**, vendored into clam with all of
 its assets in one self-contained tree. This is a staging package: the goal is
-to evolve the iframe shell onto oister's bridge (`cobdcorekit` / `cobdhostkit`,
+to evolve the iframe shell onto clam's bridge (`cobdcorekit` / `cobdhostkit`,
 e.g. `COBDCoreKit.nav`) with everything in one place, instead of the old setup
 where the shell source, the (broken) Vite root, the built output, and the
 springboard child app were scattered across `bowencommunity-core` and the
@@ -27,7 +27,7 @@ imported in `main.ts` — no sync-tokens script.
 ## Run
 
 ```sh
-npm install      # from the oister repo root (workspaces)
+npm install      # from the clam repo root (workspaces)
 npm run dev -w @cobdfamily/www
 ```
 

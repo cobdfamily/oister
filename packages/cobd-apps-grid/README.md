@@ -27,7 +27,7 @@ package is just the grid surface.)
 - **Launch.** Clicking a tile fires a cancelable `cobd-app-launch`
   event (`detail` = the item), then navigates to `href` in `target`
   (`_self` default; `_blank`; or a named frame like `app` to load into
-  the oister shell's `<iframe name="app">`).
+  the clam shell's `<iframe name="app">`).
 - **Ionic-optional.** With `<ion-app>` on the page it lays out via
   `<ion-grid>`/`<ion-col>`; otherwise a CSS auto-fill grid. Light DOM
   so Ionic can style the `ion-*` layout.

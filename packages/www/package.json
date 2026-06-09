@@ -2,7 +2,7 @@
   "name": "@cobdfamily/www",
   "version": "0.0.0",
   "private": true,
-  "description": "TEMPORARY: the bowencommunity-core umbrella shell (index + iframe nav + toolbar) vendored into oister with all its assets in one tree, as a clean Vite source app. Staging ground for wiring the shell onto cobdcorekit/cobdhostkit.",
+  "description": "TEMPORARY: the bowencommunity-core umbrella shell (index + iframe nav + toolbar) vendored into clam with all its assets in one tree, as a clean Vite source app. Staging ground for wiring the shell onto cobdcorekit/cobdhostkit.",
   "type": "module",
   "license": "AGPL-3.0",
   "scripts": {

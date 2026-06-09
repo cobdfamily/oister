@@ -1,18 +1,18 @@
-// Rendering the oister umbrella shell.
+// Rendering the clam umbrella shell.
 //
-// Folded in from the former @cobdfamily/oister package (it had a single
+// Folded in from the former @cobdfamily/clam package (it had a single
 // consumer — this generator — and wasn't published, so it lived here as a
 // build-time renderer behind a dist/ import). Ported to plain .mjs to keep the
 // generator build-free.
 //
 //   renderApp({ brand, menu, seo, cdn })  -- the high-level entry: maps the
 //      per-app source files (brand.json + menu.json + seo + the CDN manifest)
-//      onto an OisterConfig and renders. The returned string drops straight
+//      onto an ClamConfig and renders. The returned string drops straight
 //      into the app's webDir/index.html.
 //
-//   renderOisterShell(config)             -- the low-level core: compiles the
+//   renderClamShell(config)             -- the low-level core: compiles the
 //      bundled Handlebars template (./assets/index.html) and renders a
-//      fully-resolved OisterConfig.
+//      fully-resolved ClamConfig.
 
 import Handlebars from "handlebars";
 import { readFileSync } from "node:fs";
@@ -36,9 +36,9 @@ const REQUIRED_CDN_ASSETS = [
  * depends on. Fails loud at the boundary rather than rendering a page with
  * empty holes — the same posture as the generator's validateBrand/validateMenu.
  */
-export function validateOisterConfig(config) {
+export function validateClamConfig(config) {
     const need = (cond, msg) => {
-        if (!cond) throw new Error(`oister config: ${msg}`);
+        if (!cond) throw new Error(`clam config: ${msg}`);
     };
     need(config?.site?.title, "site.title is required");
     need(config?.site?.lang, "site.lang is required");
@@ -73,7 +73,7 @@ function normalizeMenu(menu) {
 
 /**
  * Map the per-app source files (brand.json + menu.json + seo + the CDN
- * manifest) onto a fully-resolved OisterConfig, applying COBD defaults for
+ * manifest) onto a fully-resolved ClamConfig, applying COBD defaults for
  * anything the seo block leaves out.
  */
 export function appToConfig(input) {
@@ -156,12 +156,12 @@ export function loadBundledTemplate() {
 }
 
 /**
- * Render the oister umbrella-shell index.html from a fully-resolved
- * OisterConfig. Returns the finished HTML page as a string. Pass `templateSrc`
+ * Render the clam umbrella-shell index.html from a fully-resolved
+ * ClamConfig. Returns the finished HTML page as a string. Pass `templateSrc`
  * to render an alternate template (used by tests); defaults to the bundled one.
  */
-export function renderOisterShell(config, templateSrc = loadBundledTemplate()) {
-    validateOisterConfig(config);
+export function renderClamShell(config, templateSrc = loadBundledTemplate()) {
+    validateClamConfig(config);
     const hb = createHandlebars();
     const template = hb.compile(templateSrc);
     return template(config);
@@ -173,5 +173,5 @@ export function renderOisterShell(config, templateSrc = loadBundledTemplate()) {
  * drop it into the generated app's webDir (e.g. `.generated/<app>/www/index.html`).
  */
 export function renderApp(input, templateSrc = loadBundledTemplate()) {
-    return renderOisterShell(appToConfig(input), templateSrc);
+    return renderClamShell(appToConfig(input), templateSrc);
 }

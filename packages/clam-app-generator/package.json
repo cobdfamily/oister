@@ -1,12 +1,12 @@
 {
-  "name": "@cobdfamily/cobd-app-generator",
+  "name": "@cobdfamily/clam-app-generator",
   "version": "0.0.0",
   "private": true,
   "description": "Generates iOS/Android Capacitor apps from one shared web base plus a tiny per-app overlay. Native projects are disposable, regenerated from a pinned Capacitor version each build (approach D).",
   "type": "module",
   "license": "AGPL-3.0",
   "bin": {
-    "cobd-app-generator": "bin/gen.mjs"
+    "clam-app-generator": "bin/gen.mjs"
   },
   "scripts": {
     "gen": "node bin/gen.mjs",

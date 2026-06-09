@@ -1,11 +1,11 @@
-# @cobdfamily/cobd-app-generator
+# @cobdfamily/clam-app-generator
 
 Generates the family of near-identical Capacitor apps. Each app's web layer is
-the **oister umbrella shell** (rendered from its `brand.json` + `menu.json` +
-`seo.json` via the bundled oister shell renderer (`src/oister.mjs`)); the apps differ only by
+the **clam umbrella shell** (rendered from its `brand.json` + `menu.json` +
+`seo.json` via the bundled clam shell renderer (`src/clam.mjs`)); the apps differ only by
 **identifier**, **icon**, **menu**, and **SEO/branding**.
 
-> The shared web `base` is **optional** — the oister shell is self-contained
+> The shared web `base` is **optional** — the clam shell is self-contained
 > (it loads the CLF runtime from the CDN and the app itself in an `<iframe>`), so
 > with `base` unset the generator emits the shell only. Set `base` in
 > `generator.config.json` if an app needs extra built web assets in its `webDir`.
@@ -21,7 +21,7 @@ checked-in native projects to migrate.
 ```
 generator.config.json     pinned Capacitor version, platforms, base ref   ← bump to upgrade ALL apps
 shared/overlay.json       DEPRECATED — permissions are now per-app (brand extra.capabilities)
-shared/cdn.json           CDN/SRI manifest the oister shell loads (URLs + integrity)
+shared/cdn.json           CDN/SRI manifest the clam shell loads (URLs + integrity)
 apps/<id>/
   brand.json              { appId, appName, extra, seo } ← identity + theme + domains + capabilities + page metadata
   icon.png                ≥1024px source                ← the app icon (you add this)
@@ -45,13 +45,13 @@ node bin/gen.mjs --all                    # regenerate every app
 
 Each run: build base web → assemble webDir (this app's `menu.json` + `apps.json` +
 `brand.json`, and render `index.html` from `brand.json` + `menu.json` + `seo.json`
-+ `shared/cdn.json` via the bundled oister shell renderer (`src/oister.mjs`)) → scaffold an ephemeral
++ `shared/cdn.json` via the bundled clam shell renderer (`src/clam.mjs`)) → scaffold an ephemeral
 project at the pinned version → `npm install` → `cap add` → apply native
 permissions (from `brand.extra.capabilities`) → `@capacitor/assets` (icon/splash
 from `icon.png`) → `cap sync`. The result in `.generated/<app>/` is ready to
 build + sign.
 
-> The generated `index.html` is the oister umbrella shell. Its home screen is a
+> The generated `index.html` is the clam umbrella shell. Its home screen is a
 > `<cobd-apps-grid>` launcher fed by the app's `apps.json` (copied into the
 > webDir); `menu.json` is the side-drawer nav, `brand.json` the title + theme
 > colour, `seo.json` the page metadata. Tapping a launcher tile navigates the
@@ -68,7 +68,7 @@ build + sign.
 ## Offline + serving the shell
 
 Each app's webDir gets an offline **service worker** (`sw.js` +
-`sw-register.js` + `offline.html`, from the bundled oister shell renderer): it
+`sw-register.js` + `offline.html`, from the bundled clam shell renderer): it
 precaches the shell (`index.html` + the JSON) and runtime-caches the
 CLF CDN assets and visited pages, so the launcher works offline. In a
 Capacitor WebView the SW needs **app-bound domains** turned on — which
@@ -89,7 +89,7 @@ from the app's output dir to serve the shell remotely (one image per
 app, routed by hostname through the barbet gateway):
 
 ```sh
-docker build -t cobdfamily/oister-<appId-with-dashes> .generated/<app>/
+docker build -t cobdfamily/clam-<appId-with-dashes> .generated/<app>/
 ```
 
 When `extra.domains` is set, the app loads **remotely** by default:

@@ -1,5 +1,5 @@
 {
-  "name": "@cobdfamily/oister",
+  "name": "@cobdfamily/clam",
   "version": "0.0.0",
   "private": true,
   "description": "Native-bridge toolkit for the cobdfamily super-app shell (cobdcorekit + cobdhostkit).",

@@ -29,7 +29,7 @@
 // a listener calls preventDefault(), navigates to `href` in `target`
 // (grid-level `target` attribute, default "_self"; per-item `target`
 // wins). target="app" loads the app into a named iframe (e.g. the
-// oister shell's <iframe name="app">); "_blank" opens a new tab.
+// clam shell's <iframe name="app">); "_blank" opens a new tab.
 //
 // Resume (opt-in via `remember`): on load the grid reads ?from=<url>
 // (param name from `from-param`, default "from") and stores that app's
