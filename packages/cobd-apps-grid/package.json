@@ -1,0 +1,32 @@
+{
+  "name": "@cobdfamily/cobd-apps-grid",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The <cobd-apps-grid> custom element: an iOS/iPadOS home-screen-inspired app launcher grid (Ionic-optional, light DOM) with per-app localStorage resume. The springboard surface for the COBD app family; hosted on the /apps page.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cobd-apps-grid": {
+      "types": "./dist/cobd-apps-grid.d.ts",
+      "default": "./dist/cobd-apps-grid.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test --import tsx test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.6.3"
+  }
+}
