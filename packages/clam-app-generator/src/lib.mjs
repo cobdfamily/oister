@@ -47,7 +47,9 @@ export function validateMenu(menu, appName) {
 /**
  * Validate an app's apps.json: the launcher tiles for <cobd-apps-grid>
  * (distinct from menu.json's nav). An array or { apps: [...] }; each
- * tile needs a label + href (icon/iconUrl/target are optional).
+ * tile needs a label + target (the launch URL). image_url is optional
+ * (the tile image); beta_target is accepted but ignored (see
+ * tilesForGrid) — it's the beta-channel URL, not wired up yet.
  */
 export function validateApps(apps, appName) {
   const where = `apps/${appName ?? "?"}/apps.json`;
@@ -57,11 +59,27 @@ export function validateApps(apps, appName) {
     if (typeof it?.label !== "string" || it.label.trim() === "") {
       throw new Error(`${where}[${i}]: "label" is required`);
     }
-    if (typeof it?.href !== "string" || it.href.trim() === "") {
-      throw new Error(`${where}[${i}]: "href" is required`);
+    if (typeof it?.target !== "string" || it.target.trim() === "") {
+      throw new Error(`${where}[${i}]: "target" is required`);
     }
   });
   return items;
+}
+
+/**
+ * Compile authoring tiles (label / target / image_url, + beta_target which
+ * we ignore for now) into the runtime shape <cobd-apps-grid> consumes:
+ * label / href (the launch URL) / iconUrl (the tile image). The beta_target
+ * is intentionally dropped until a beta-channel toggle exists.
+ */
+export function tilesForGrid(items) {
+  return items.map((it) => {
+    const tile = { label: it.label, href: it.target };
+    if (typeof it.image_url === "string" && it.image_url.trim() !== "") {
+      tile.iconUrl = it.image_url;
+    }
+    return tile;
+  });
 }
 
 /**

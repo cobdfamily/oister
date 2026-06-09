@@ -32,7 +32,7 @@ import {
   absolutizeAsset, addKnownRegions, appDomains, appsOrigin,
   collectPermissions, planSteps, readJson, renderCapacitorConfig,
   renderProjectPackageJson, renderSwsConfig, renderSwsDockerfile,
-  validateApps, validateBrand, validateConfig, validateMenu, validateSeo,
+  tilesForGrid, validateApps, validateBrand, validateConfig, validateMenu, validateSeo,
 } from "../src/lib.mjs";
 
 const PKG_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -63,15 +63,15 @@ function loadAppDir(dir, label) {
   const brand = validateBrand(rawBrand, label);
   const menu = validateMenu(readJson(join(dir, "menu.json")), label); // throws if bad
   const seo = validateSeo(rawBrand.seo, label); // seo lives in brand.json now
-  validateApps(readJson(join(dir, "apps.json")), label); // launcher tiles; throws if bad
+  const apps = validateApps(readJson(join(dir, "apps.json")), label); // launcher tiles; throws if bad
   if (!existsSync(join(dir, "icon.png"))) {
     log(`WARNING: ${join(dir, "icon.png")} missing — @capacitor/assets will fail until you add a ≥1024px icon`);
   }
-  return { brand, menu, seo };
+  return { brand, menu, seo, apps };
 }
 
 function generate(config, { app, dir, outBase, platforms, dryRun }) {
-  const { brand, menu, seo } = loadAppDir(dir, app);
+  const { brand, menu, seo, apps } = loadAppDir(dir, app);
   const plan = planSteps({ config, app, brand });
 
   log(`app "${app}"  →  ${brand.appName} (${brand.appId})  [${platforms.join(", ")}]`);
@@ -109,7 +109,9 @@ function generate(config, { app, dir, outBase, platforms, dryRun }) {
     log("no shared web base configured — emitting the clam shell only (index.html + brand/menu)");
   }
   cpSync(join(dir, "menu.json"), join(www, "menu.json"));
-  cpSync(join(dir, "apps.json"), join(www, "apps.json")); // launcher tiles for <cobd-apps-grid>
+  // Compile the authoring tiles (label/target/image_url, + beta_target which
+  // we drop) into the runtime shape <cobd-apps-grid> fetches (label/href/iconUrl).
+  writeFileSync(join(www, "apps.json"), JSON.stringify({ apps: tilesForGrid(apps) }, null, 2) + "\n");
   writeFileSync(join(www, "brand.json"), JSON.stringify(brand) + "\n");
   // Per-app static assets (icons, logo, og image) -> webDir/assets/,
   // so branding is self-hosted (served from apps.<domain>, SW-cached).

@@ -26,7 +26,7 @@ apps/<id>/
   brand.json              { appId, appName, extra, seo } ← identity + theme + domains + capabilities + page metadata
   icon.png                ≥1024px source                ← the app icon (you add this)
   menu.json               side-drawer nav items         ← {label, target}
-  apps.json               home-screen launcher tiles    ← {label, href, icon} for <cobd-apps-grid>
+  apps.json               home-screen launcher tiles    ← {label, target, image_url} (beta_target ignored); compiled to <cobd-apps-grid>'s {label, href, iconUrl}
   assets/                 per-app static files          ← logo / og image, copied to webDir/assets/ (self-hosted)
 bin/gen.mjs               the generator CLI
 src/lib.mjs               pure, tested core logic

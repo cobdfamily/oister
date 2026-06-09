@@ -7,7 +7,7 @@ import {
   absolutizeAsset, addKnownRegions, allowNavigation, appDomains, appsOrigin,
   cdnUrlsFromManifest, collectPermissions, planSteps,
   renderCapacitorConfig, renderProjectPackageJson, renderSwsConfig,
-  renderSwsDockerfile, validateApps, validateBrand, validateConfig,
+  renderSwsDockerfile, tilesForGrid, validateApps, validateBrand, validateConfig,
   validateMenu, validateSeo,
 } from "../src/lib.mjs";
 
@@ -116,12 +116,24 @@ test("addKnownRegions quotes non-bare region codes and no-ops without a block", 
   assert.equal(addKnownRegions("no regions here", ["fr"]), "no regions here");
 });
 
-test("validateApps accepts array or { apps } and requires label + href", () => {
-  assert.equal(validateApps([{ label: "Ferry", href: "https://ferry/" }]).length, 1);
-  assert.equal(validateApps({ apps: [{ label: "A", href: "/a" }] }).length, 1);
-  assert.throws(() => validateApps([{ label: "no href" }]), /href/);
-  assert.throws(() => validateApps([{ href: "/x" }]), /label/);
+test("validateApps accepts array or { apps } and requires label + target", () => {
+  assert.equal(validateApps([{ label: "Ferry", target: "https://ferry/" }]).length, 1);
+  assert.equal(validateApps({ apps: [{ label: "A", target: "/a" }] }).length, 1);
+  assert.throws(() => validateApps([{ label: "no target" }]), /target/);
+  assert.throws(() => validateApps([{ target: "/x" }]), /label/);
   assert.throws(() => validateApps("nope"), /expected an array/);
+});
+
+test("tilesForGrid maps target->href + image_url->iconUrl, drops beta_target", () => {
+  assert.deepEqual(
+    tilesForGrid([
+      { label: "Ferry", target: "https://ferry/", beta_target: "https://beta/", image_url: "https://ferry/i.png" },
+      { label: "Bare", target: "/x" },
+    ]),
+    [
+      { label: "Ferry", href: "https://ferry/", iconUrl: "https://ferry/i.png" },
+      { label: "Bare", href: "/x" },
+    ]);
 });
 
 test("appDomains + allowNavigation read brand.extra and build nav patterns", () => {
