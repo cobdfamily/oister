@@ -1,60 +1,47 @@
+// torch: on/off/toggle/flash + isOn, with an injected backend (no hardware).
+
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createTransport } from "../src/transport.ts";
-import { installTorch } from "../src/torch.ts";
+import { installTorch } from "../src/torch.js";
+import type { TorchBackend } from "../src/types.js";
 
-/** Mimic Window.postMessage: calling w.postMessage(data) fires "message" on w itself. */
-function attachPostMessage(w: EventTarget, origin: string) {
-  (w as unknown as { postMessage: (d: unknown) => void }).postMessage = (data) => {
-    const ev = new Event("message") as Event & { data: unknown; origin: string };
-    ev.data = data;
-    ev.origin = origin;
-    w.dispatchEvent(ev);
-  };
+function fakeBackend() {
+    const calls: string[] = [];
+    const backend: TorchBackend = {
+        on: async () => { calls.push("on"); },
+        off: async () => { calls.push("off"); },
+        buzz: async () => { calls.push("buzz"); },
+    };
+    return { backend, calls };
 }
 
-test("torch round-trips through the postMessage transport", async () => {
-  const ORIGIN = "https://host.cobd.ca";
-  const child = new EventTarget();
-  const host = new EventTarget();
+test("on/off/toggle track isOn and drive the backend", async () => {
+    const { backend, calls } = fakeBackend();
+    const torch = installTorch({ backend });
 
-  attachPostMessage(child, ORIGIN);
-  attachPostMessage(host, ORIGIN);
-  (child as unknown as { parent: EventTarget }).parent = host;
-  (globalThis as unknown as { window: EventTarget }).window = child;
+    assert.equal(torch.isOn, false);
+    assert.equal(await torch.on(), true);
+    assert.equal(torch.isOn, true);
+    assert.equal(await torch.toggle(), false);
+    assert.equal(await torch.toggle(), true);
+    assert.equal(await torch.off(), false);
 
-  // minimal host broker
-  let torchState = false;
-  host.addEventListener("message", (e) => {
-    const m = (e as MessageEvent).data as {
-      __COBDCoreKit?: boolean;
-      kind?: string;
-      capability?: string;
-      method?: string;
-      id?: number;
-    };
-    if (!m?.__COBDCoreKit || m.kind !== "call" || m.capability !== "torch") return;
-    if (m.method === "on") torchState = true;
-    else if (m.method === "off") torchState = false;
-    else if (m.method === "toggle") torchState = !torchState;
-    // reply to the child (real brokers use e.source.postMessage)
-    (child as unknown as { postMessage: (d: unknown) => void }).postMessage({
-      __COBDCoreKit: true,
-      kind: "result",
-      id: m.id,
-      value: torchState,
-    });
-  });
+    assert.deepEqual(calls, ["on", "buzz", "off", "buzz", "on", "buzz", "off", "buzz"]);
+});
 
-  const transport = createTransport({ hostOrigin: ORIGIN, target: host as unknown as Window });
-  const torch = installTorch(transport);
+test("on() is idempotent (no backend call when already on)", async () => {
+    const { backend, calls } = fakeBackend();
+    const torch = installTorch({ backend });
+    await torch.on();
+    await torch.on();
+    assert.deepEqual(calls, ["on", "buzz"]);
+});
 
-  assert.equal(torch.isOn, false);
-  assert.equal(await torch.on(), true);
-  assert.equal(torch.isOn, true);
-  assert.equal(await torch.toggle(), false);
-  assert.equal(await torch.toggle(), true);
-  assert.equal(await torch.off(), false);
-  assert.equal(torch.isOn, false);
+test("flash turns on (with buzz) then off (no second buzz)", async () => {
+    const { backend, calls } = fakeBackend();
+    const torch = installTorch({ backend, flashOnMs: 1 });
+    await torch.flash();
+    assert.deepEqual(calls, ["on", "buzz", "off"]);
+    assert.equal(torch.isOn, false);
 });

@@ -1,7 +1,7 @@
 {
   "name": "@cobdfamily/cobdcorekit",
   "version": "0.0.0",
-  "description": "The COBDCoreKit client API: shims navigator.geolocation and exposes COBDCoreKit.torch, routing both to cobdhostkit. The only bridge API you call, inside or outside the iframe.",
+  "description": "COBDCoreKit: the single client API that runs in the page (the top-level Capacitor WebView) and calls the Capacitor plugins directly — torch, geolocation (navigator shim), in-app browser, nav, pdf — plus the capability→native-permission map. No iframe, no host bridge. Replaces the former cobdcorekit + cobdhostkit split.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./permissions": {
+      "types": "./dist/permissions.d.ts",
+      "default": "./dist/permissions.js"
     }
   },
   "files": [
@@ -19,7 +23,17 @@
     "build": "tsc",
     "test": "node --test --import tsx test/*.test.ts"
   },
+  "dependencies": {
+    "@capacitor/browser": "^8.0.3",
+    "@capacitor/geolocation": "^8.2.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capgo/capacitor-flash": "^8.0.28"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^8.0.0"
+  },
   "devDependencies": {
+    "@capacitor/core": "^8.0.0",
     "tsx": "^4.20.5",
     "typescript": "^5.6.3"
   }

@@ -3,6 +3,7 @@
   "appName": "Bowen Community",
   "extra": {
     "themeColor": "#31d53d",
-    "appUrl": "https://bowencommunity.ca/"
+    "appUrl": "https://bowencommunity.ca/",
+    "capabilities": ["location", "notifications"]
   }
 }

@@ -1,10 +1,18 @@
-import type { BrowserAPI, Transport } from "./types.js";
+import { Browser } from "@capacitor/browser";
 
-/** `COBDCoreKit.browser` — in-app browser via the host. */
-export function installBrowser(transport: Transport): BrowserAPI {
-  return {
-    async open(url) {
-      await transport.call("browser", "open", { url });
-    },
-  };
+import type { BrowserAPI } from "./types.js";
+
+/**
+ * `COBDCoreKit.browser` — opens a URL in the in-app browser via
+ * @capacitor/browser (web impl falls back to window.open).
+ */
+export function installBrowser(
+    open: (url: string) => Promise<void> = (url) => Browser.open({ url }),
+): BrowserAPI {
+    return {
+        async open(url) {
+            if (!url) throw new Error("browser.open: url required");
+            await open(url);
+        },
+    };
 }

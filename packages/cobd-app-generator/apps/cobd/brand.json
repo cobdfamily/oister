@@ -3,6 +3,7 @@
   "appName": "COBD",
   "extra": {
     "themeColor": "#31d53d",
-    "appUrl": "https://cobd.ca/"
+    "appUrl": "https://cobd.ca/",
+    "capabilities": ["location", "camera", "photos", "notifications"]
   }
 }

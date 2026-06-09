@@ -1,127 +1,116 @@
-/** Shared protocol + public types for the COBDCoreKit mini-app runtime. */
+// Public types for COBDCoreKit.
+//
+// COBDCoreKit runs IN the page (the top-level Capacitor WebView -- no
+// iframe, no bridge) and calls the Capacitor plugins directly. Each
+// plugin has a web implementation, so the same code works in a plain
+// browser too; we don't branch on platform.
 
-/**
- * The in-process broker interface that cobdcorekit talks to when it runs in the
- * shell itself (no iframe). `@cobdfamily/cobdhostkit`'s broker satisfies this;
- * cobdcorekit depends only on the shape, never on the host package.
- */
-export interface LocalBroker {
-  /**
-   * Invoke a capability method in-process. `emit` lets the handler push events
-   * (watch ticks, torch-state changes, ...) back to this caller for the same
-   * capability. Resolves with the result, rejects with the error.
-   */
-  invoke(
-    capability: string,
-    method: string,
-    options: unknown,
-    emit: (event: string, payload: unknown) => void,
-  ): Promise<unknown>;
+/** Native ops torch needs; injectable so tests don't touch hardware. */
+export interface TorchBackend {
+    on(): Promise<void>;
+    off(): Promise<void>;
+    buzz(durationMs: number): Promise<void>;
 }
-
-export interface TransportOptions {
-  /**
-   * Origin of the host shell. Inbound messages from any other origin are
-   * ignored, and outbound messages are targeted at this origin. Defaults to
-   * `"*"` (no origin check) — set it in production. (iframe transport only)
-   */
-  hostOrigin?: string;
-  /** Window to post to. Defaults to `window.parent`. (iframe transport only) */
-  target?: Window;
-  /**
-   * When provided, cobdcorekit talks to this in-process broker directly instead
-   * of postMessaging a parent shell. Use this when the *shell's own* code calls
-   * the cobdcorekit API — same API, no iframe round-trip.
-   */
-  broker?: LocalBroker;
-}
-
-export interface Transport {
-  /** Send a request to the host and resolve with its result (or reject with its error). */
-  call(capability: string, method: string, options?: unknown): Promise<unknown>;
-  /** Subscribe to a host-pushed event for a capability. Returns an unsubscribe fn. */
-  onEvent(capability: string, event: string, handler: (payload: unknown) => void): () => void;
-  /** Fire-and-forget a raw message to the host. */
-  post(message: object): void;
-}
-
-/** child -> host */
-export interface CallMessage {
-  __COBDCoreKit: true;
-  kind: "call";
-  id: number;
-  capability: string;
-  method: string;
-  options?: unknown;
-}
-
-/** host -> child: successful reply to a `call` */
-export interface ResultMessage {
-  __COBDCoreKit: true;
-  kind: "result";
-  id: number;
-  value: unknown;
-}
-
-/** host -> child: failed reply to a `call` */
-export interface ErrorMessage {
-  __COBDCoreKit: true;
-  kind: "error";
-  id: number;
-  error: { code?: number; message: string };
-}
-
-/** host -> child: unsolicited push (watch ticks, torch state changes, ...) */
-export interface EventMessage {
-  __COBDCoreKit: true;
-  kind: "event";
-  capability: string;
-  event: string;
-  payload: unknown;
-}
-
-export type InboundMessage = ResultMessage | ErrorMessage | EventMessage;
 
 export interface TorchAPI {
-  on(): Promise<boolean>;
-  off(): Promise<boolean>;
-  toggle(): Promise<boolean>;
-  /**
-   * One-shot blink (ported from bowencommunity-core): light on + a haptic buzz,
-   * then off after `onMs` (default 750). Resolves when the blink completes.
-   */
-  flash(onMs?: number): Promise<void>;
-  /** Locally-cached mirror of host truth — eventually consistent, fine for UI. */
-  readonly isOn: boolean;
+    on(): Promise<boolean>;
+    off(): Promise<boolean>;
+    toggle(): Promise<boolean>;
+    /** One-shot blink: light on + a haptic buzz, then off after `onMs` (default 750). */
+    flash(onMs?: number): Promise<void>;
+    /** Locally-tracked mirror of the LED state. */
+    readonly isOn: boolean;
+}
+
+/** Flat position the geolocation shim hands to W3C callbacks. */
+export interface FlatPosition {
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    altitude: number | null;
+    altitudeAccuracy: number | null;
+    heading: number | null;
+    speed: number | null;
+    timestamp: number;
+}
+
+/** Native geolocation ops; injectable for testing. */
+export interface GeoBackend {
+    getCurrentPosition(options?: unknown): Promise<FlatPosition>;
+    watchPosition(
+        options: unknown,
+        cb: (pos: FlatPosition | null, err?: unknown) => void,
+    ): Promise<string>;
+    clearWatch(id: string): Promise<void>;
 }
 
 export interface NavAPI {
-  /** Point the shell's single app iframe at a URL. */
-  go(url: string): Promise<void>;
+    /** Navigate the WebView to a URL (top-level; no iframe). */
+    go(url: string): Promise<void>;
 }
 
 export interface BrowserAPI {
-  /** Open a URL in an in-app browser. */
-  open(url: string): Promise<void>;
+    /** Open a URL in the in-app browser (@capacitor/browser). */
+    open(url: string): Promise<void>;
+}
+
+/** The native PDF op. No PDF plugin is bundled; the app supplies one. */
+export interface PdfBackend {
+    open(params: { url: string; title?: string; top?: number }): Promise<void>;
 }
 
 export interface PdfAPI {
-  /** Open a PDF (URL or path) in a native viewer. */
-  open(file: string): Promise<void>;
+    /** Open a PDF (URL or path) in a native viewer. Requires a configured backend. */
+    open(file: string): Promise<void>;
+}
+
+/** One permission/entitlement entry, resolved for display. */
+export interface EntitlementEntry {
+    /** Capability name (e.g. "camera"). */
+    capability: string;
+    /** iOS Info.plist usage-description keys this capability needs. */
+    iosKeys: string[];
+    /** Android `<uses-permission>` names this capability needs. */
+    androidPermissions: string[];
+    /** Localized usage description shown in the prompt. */
+    description: string;
 }
 
 export interface COBDCoreKit {
-  readonly version: string;
-  readonly torch: TorchAPI;
-  readonly nav: NavAPI;
-  readonly browser: BrowserAPI;
-  readonly pdf: PdfAPI;
+    readonly version: string;
+    readonly torch: TorchAPI;
+    readonly nav: NavAPI;
+    readonly browser: BrowserAPI;
+    readonly pdf: PdfAPI;
+    /**
+     * The permission/entitlement entries for a set of capabilities, with
+     * each description resolved (via the optional `resolve` lookup, else
+     * the capability's built-in English fallback). Handy for an in-app
+     * pre-prompt before triggering the OS permission dialog.
+     */
+    getEntitlements(
+        capabilities: string[],
+        resolve?: (stringKey: string) => string | undefined,
+    ): EntitlementEntry[];
+}
+
+/** Options for installCOBDCoreKit (backends are injectable for tests). */
+export interface InstallOptions {
+    torchBackend?: TorchBackend;
+    geoBackend?: GeoBackend;
+    pdfBackend?: PdfBackend;
+    /** Override how nav.go navigates (default: window.location.assign). */
+    navigate?: (url: string) => void;
+    /** Override the in-app browser open (default: @capacitor/browser). */
+    browserOpen?: (url: string) => Promise<void>;
+    /** Skip overriding navigator.geolocation (default false). */
+    skipGeolocationShim?: boolean;
 }
 
 declare global {
-  interface Window {
-    COBDCoreKit: COBDCoreKit;
-  }
-  // eslint-disable-next-line no-var
-  var COBDCoreKit: COBDCoreKit;
+    interface Window {
+        COBDCoreKit: COBDCoreKit;
+    }
+    // eslint-disable-next-line no-var
+    var COBDCoreKit: COBDCoreKit;
 }

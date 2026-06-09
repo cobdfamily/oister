@@ -22,8 +22,9 @@ import { fileURLToPath } from "node:url";
 import { renderApp } from "@cobdfamily/oister";
 
 import {
-  planSteps, readJson, renderCapacitorConfig, renderProjectPackageJson,
-  validateBrand, validateConfig, validateMenu, validateSeo,
+  collectPermissions, planSteps, readJson, renderCapacitorConfig,
+  renderProjectPackageJson, validateBrand, validateConfig, validateMenu,
+  validateSeo,
 } from "../src/lib.mjs";
 
 const PKG_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -102,28 +103,100 @@ function generate(config, app, { platforms, dryRun }) {
   // 5. install  6. add platforms  7. native overlay  8. assets  9. sync
   sh("npm", ["install"], out);
   for (const p of platforms) sh("npx", ["cap", "add", p], out);
-  applyNativeOverlay(config, out, platforms);
+  applyPermissions(brand, out, platforms);
   sh("npx", ["capacitor-assets", "generate", "--assetPath", join(dir, "icon.png")], out);
   sh("npx", ["cap", "sync"], out);
 
   log(`done: ${out} is ready to build + sign (see templates/)`);
 }
 
-function applyNativeOverlay(config, out, platforms) {
-  const overlay = readJson(join(PKG_DIR, config.sharedOverlay));
-  if (platforms.includes("ios") && overlay.ios?.infoPlist) {
-    const plist = join(out, "ios", "App", "App", "Info.plist");
-    for (const [k, v] of Object.entries(overlay.ios.infoPlist)) {
-      // PlistBuddy is macOS-only; -c add overwrites if present via Set fallback
-      try { sh("/usr/libexec/PlistBuddy", ["-c", `Add :${k} string ${v}`, plist]); }
-      catch { sh("/usr/libexec/PlistBuddy", ["-c", `Set :${k} ${v}`, plist]); }
-    }
-    log(`applied ${Object.keys(overlay.ios.infoPlist).length} iOS Info.plist key(s)`);
+const PERM_LOCALES_FALLBACK = ["en"];
+
+/**
+ * clf-core's localized perm.* strings, IF @cobdfamily/clf-core is
+ * installed (it's published, but not a hard dep here). Returns
+ * { strings: { "perm.camera": { en, fr } }, locales } or null — in
+ * which case the cobdcorekit English fallbacks are used.
+ */
+function loadPermStrings() {
+  const candidates = [
+    resolve(PKG_DIR, "..", "..", "node_modules", "@cobdfamily", "clf-core", "dist", "i18n", "chrome.json"),
+    resolve(PKG_DIR, "node_modules", "@cobdfamily", "clf-core", "dist", "i18n", "chrome.json"),
+  ];
+  for (const p of candidates) {
+    if (!existsSync(p)) continue;
+    try {
+      const chrome = JSON.parse(readFileSync(p, "utf8"));
+      const locales = Array.isArray(chrome.locales) && chrome.locales.length
+        ? chrome.locales : PERM_LOCALES_FALLBACK;
+      const strings = {};
+      for (const s of chrome.strings ?? []) {
+        if (!String(s.id).startsWith("perm.")) continue;
+        const byLocale = {};
+        for (const loc of locales) if (typeof s[loc] === "string") byLocale[loc] = s[loc];
+        strings[s.id] = byLocale;
+      }
+      return { strings, locales };
+    } catch { /* unreadable -- fall through to fallbacks */ }
   }
-  if (platforms.includes("android") && overlay.android?.permissions) {
+  return null;
+}
+
+function describePerm(perm, strings, locale) {
+  return strings?.[perm.stringKey]?.[locale]
+    ?? strings?.[perm.stringKey]?.en
+    ?? perm.fallback;
+}
+
+const escapeStringsValue = (s) =>
+  String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+/**
+ * Emit native permissions for the app's declared capabilities
+ * (brand.json `extra.capabilities`): iOS Info.plist usage strings +
+ * localized <locale>.lproj/InfoPlist.strings, and Android
+ * <uses-permission> lines. Sourced from @cobdfamily/cobdcorekit's
+ * capability→key map and clf-core's localized strings (English
+ * fallback when clf-core isn't installed). Replaces the old static
+ * shared/overlay.json block.
+ */
+function applyPermissions(brand, out, platforms) {
+  const capabilities = brand.extra?.capabilities ?? [];
+  if (!Array.isArray(capabilities) || capabilities.length === 0) {
+    log("no extra.capabilities declared — skipping native permissions");
+    return;
+  }
+  const { ios, android } = collectPermissions(capabilities);
+  const clf = loadPermStrings();
+  const locales = clf?.locales ?? PERM_LOCALES_FALLBACK;
+  const strings = clf?.strings;
+
+  if (platforms.includes("ios") && Object.keys(ios).length) {
+    const appDir = join(out, "ios", "App", "App");
+    const plist = join(appDir, "Info.plist");
+    // Default-locale usage strings into Info.plist (PlistBuddy is
+    // macOS-only; Add, else Set if the key already exists).
+    for (const [key, perm] of Object.entries(ios)) {
+      const v = describePerm(perm, strings, locales[0]);
+      try { sh("/usr/libexec/PlistBuddy", ["-c", `Add :${key} string ${v}`, plist]); }
+      catch { sh("/usr/libexec/PlistBuddy", ["-c", `Set :${key} ${v}`, plist]); }
+    }
+    // Localized InfoPlist.strings per locale.
+    for (const loc of locales) {
+      const lines = Object.entries(ios).map(([key, perm]) =>
+        `"${key}" = "${escapeStringsValue(describePerm(perm, strings, loc))}";`);
+      const dir = join(appDir, `${loc}.lproj`);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "InfoPlist.strings"), lines.join("\n") + "\n");
+    }
+    log(`applied ${Object.keys(ios).length} iOS usage string(s) across ${locales.length} locale(s)`);
+    if (!clf) log("  (clf-core not installed — used English fallbacks; add @cobdfamily/clf-core for localized strings)");
+  }
+
+  if (platforms.includes("android") && android.length) {
     const manifest = join(out, "android", "app", "src", "main", "AndroidManifest.xml");
-    injectAndroidPermissions(manifest, overlay.android.permissions);
-    log(`applied ${overlay.android.permissions.length} Android permission(s)`);
+    injectAndroidPermissions(manifest, android);
+    log(`applied ${android.length} Android permission(s)`);
   }
 }
 

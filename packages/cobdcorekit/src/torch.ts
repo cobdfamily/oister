@@ -1,40 +1,58 @@
-import type { TorchAPI, Transport } from "./types.js";
+import { CapacitorFlash } from "@capgo/capacitor-flash";
+import { Haptics } from "@capacitor/haptics";
+
+import type { TorchAPI, TorchBackend } from "./types.js";
+
+/** Default backend: @capgo/capacitor-flash + @capacitor/haptics (both
+ *  have web implementations, so this also runs in a plain browser). */
+const defaultBackend: TorchBackend = {
+    on: () => CapacitorFlash.switchOn({}),
+    off: () => CapacitorFlash.switchOff(),
+    buzz: (durationMs) => Haptics.vibrate({ duration: durationMs }),
+};
+
+const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+export interface TorchOptions {
+    backend?: TorchBackend;
+    /** Haptic pulse length on state change, ms (default 150). */
+    hapticDuration?: number;
+    /** How long `flash` holds the light on, ms (default 750). */
+    flashOnMs?: number;
+}
 
 /**
- * `COBDCoreKit.torch` — a new API (the web has no torch standard to shim).
- *
- * Each method round-trips to the host, which owns the one physical LED and
- * returns the authoritative resulting state. `isOn` is a locally-cached mirror
- * kept fresh both by those replies and by host-pushed `state` events (e.g. the
- * torch being killed when the mini-app is backgrounded).
+ * `COBDCoreKit.torch` — `on`/`off`/`toggle` plus `flash` (one-shot
+ * blink: light on + a haptic buzz, then off). Calls the flash + haptics
+ * plugins directly; `isOn` is tracked locally.
  */
-export function installTorch(transport: Transport): TorchAPI {
-  let isOn = false;
+export function installTorch(opts: TorchOptions = {}): TorchAPI {
+    const backend = opts.backend ?? defaultBackend;
+    const hapticDuration = opts.hapticDuration ?? 150;
+    const flashOnMs = opts.flashOnMs ?? 750;
+    let isOn = false;
 
-  transport.onEvent("torch", "state", (payload) => {
-    isOn = !!(payload as { isOn?: unknown })?.isOn;
-  });
+    async function set(next: boolean, buzz: boolean): Promise<boolean> {
+        if (next !== isOn) {
+            if (next) await backend.on();
+            else await backend.off();
+            isOn = next;
+            if (buzz) await backend.buzz(hapticDuration);
+        }
+        return isOn;
+    }
 
-  return {
-    async on() {
-      isOn = !!(await transport.call("torch", "on"));
-      return isOn;
-    },
-    async off() {
-      isOn = !!(await transport.call("torch", "off"));
-      return isOn;
-    },
-    async toggle() {
-      // Resolve the flip on the host, not from the (possibly stale) mirror.
-      isOn = !!(await transport.call("torch", "toggle"));
-      return isOn;
-    },
-    async flash(onMs?: number) {
-      // The host drives the blink; `isOn` tracks it via the host's `state` events.
-      await transport.call("torch", "flash", onMs === undefined ? {} : { onMs });
-    },
-    get isOn() {
-      return isOn;
-    },
-  };
+    return {
+        on: () => set(true, true),
+        off: () => set(false, true),
+        toggle: () => set(!isOn, true),
+        async flash(onMs?: number) {
+            await set(true, true);
+            await delay(onMs ?? flashOnMs);
+            await set(false, false);
+        },
+        get isOn() {
+            return isOn;
+        },
+    };
 }

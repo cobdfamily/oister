@@ -4,8 +4,9 @@ import assert from "node:assert/strict";
 import { renderApp } from "@cobdfamily/oister";
 
 import {
-  cdnUrlsFromManifest, planSteps, renderCapacitorConfig, renderProjectPackageJson,
-  validateBrand, validateConfig, validateMenu, validateSeo,
+  cdnUrlsFromManifest, collectPermissions, planSteps, renderCapacitorConfig,
+  renderProjectPackageJson, validateBrand, validateConfig, validateMenu,
+  validateSeo,
 } from "../src/lib.mjs";
 
 test("validateBrand accepts a reverse-DNS appId and requires appName", () => {
@@ -72,6 +73,28 @@ test("cdnUrlsFromManifest builds asset URLs from the manifest version paths", ()
   assert.equal(urls.ioniconsEsm.url, "https://cdn.blindhub.ca/ionicons/8.0.13/ionicons.esm.js");
   assert.throws(() => cdnUrlsFromManifest({ components: {} }, "https://x"), /missing component "clfCommon"/);
   assert.throws(() => cdnUrlsFromManifest(manifest, ""), /base url required/);
+});
+
+test("collectPermissions maps capabilities to iOS keys + Android perms", () => {
+  const { ios, android } = collectPermissions(["camera", "location", "notifications", "bogus"]);
+  // iOS usage keys (notifications has none).
+  assert.deepEqual(Object.keys(ios).sort(), [
+    "NSCameraUsageDescription",
+    "NSLocationWhenInUseUsageDescription",
+  ]);
+  assert.equal(ios.NSCameraUsageDescription.stringKey, "perm.camera");
+  assert.ok(ios.NSCameraUsageDescription.fallback.length > 0);
+  // Android perms (deduped union; notifications contributes POST_NOTIFICATIONS).
+  assert.ok(android.includes("android.permission.CAMERA"));
+  assert.ok(android.includes("android.permission.ACCESS_FINE_LOCATION"));
+  assert.ok(android.includes("android.permission.POST_NOTIFICATIONS"));
+  // Unknown capability is skipped.
+  assert.ok(!android.includes(undefined));
+});
+
+test("collectPermissions on an empty/absent list yields nothing", () => {
+  assert.deepEqual(collectPermissions([]), { ios: {}, android: [] });
+  assert.deepEqual(collectPermissions(undefined), { ios: {}, android: [] });
 });
 
 test("validateConfig defaults platforms and rejects unknown ones", () => {

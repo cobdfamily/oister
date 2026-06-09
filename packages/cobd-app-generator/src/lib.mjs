@@ -3,6 +3,8 @@
 
 import { readFileSync } from "node:fs";
 
+import { CAPABILITY_PERMISSIONS } from "@cobdfamily/cobdcorekit/permissions";
+
 const APP_ID_RE = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i;
 
 export function readJson(path) {
@@ -91,6 +93,33 @@ const CDN_ASSETS = {
  * the resolved URLs -- nothing here is hardcoded per version.
  * Returns { <asset>: { url } }; sync-cdn adds the SRI after fetching.
  */
+/**
+ * Resolve an app's capability list (brand.json `extra.capabilities`,
+ * e.g. ["camera","location","notifications"]) into the native
+ * permissions to emit, using @cobdfamily/cobdcorekit's map:
+ *
+ *   {
+ *     ios:     { "NSCameraUsageDescription": { stringKey, fallback }, ... },
+ *     android: ["android.permission.CAMERA", ...]
+ *   }
+ *
+ * The generator turns `ios` into Info.plist usage strings (+ localized
+ * InfoPlist.strings) and `android` into <uses-permission> lines.
+ * Unknown capabilities are skipped; capabilities with no iOS privacy
+ * string (notifications, flashlight) contribute only Android entries.
+ */
+export function collectPermissions(capabilities) {
+  const ios = {};
+  const android = new Set();
+  for (const cap of capabilities ?? []) {
+    const p = CAPABILITY_PERMISSIONS[cap];
+    if (!p) continue;
+    for (const key of p.ios) ios[key] = { stringKey: p.stringKey, fallback: p.fallback };
+    for (const perm of p.android) android.add(perm);
+  }
+  return { ios, android: [...android] };
+}
+
 export function cdnUrlsFromManifest(manifest, base) {
   const root = String(base ?? "").replace(/\/$/, "");
   if (!root) throw new Error("cdnUrlsFromManifest: base url required");
@@ -120,7 +149,7 @@ export function planSteps({ config, app, brand }) {
     { id: "scaffold", desc: `write package.json (Capacitor pinned ${ver}) + capacitor.config.ts (appId=${brand.appId}, appName=${brand.appName})` },
     { id: "install", desc: `npm install in the ephemeral project` },
     { id: "cap-add", desc: `npx cap add ${platforms}` },
-    { id: "overlay-native", desc: `apply shared native overlay (iOS Info.plist keys, Android permissions/manifest)` },
+    { id: "overlay-native", desc: `apply native permissions from extra.capabilities (iOS Info.plist + localized InfoPlist.strings, Android <uses-permission>)` },
     { id: "assets", desc: `npx capacitor-assets generate (from apps/${app}/icon.png)` },
     { id: "cap-sync", desc: `npx cap sync` },
     { id: "build-sign", desc: `build + sign (CI): gradle (Android) / fastlane match + xcodebuild (iOS)` },

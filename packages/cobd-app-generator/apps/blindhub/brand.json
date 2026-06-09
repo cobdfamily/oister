@@ -3,6 +3,7 @@
   "appName": "BlindHub",
   "extra": {
     "themeColor": "#1d6fd5",
-    "appUrl": "https://blindhub.ca/"
+    "appUrl": "https://blindhub.ca/",
+    "capabilities": ["location", "camera", "notifications"]
   }
 }
