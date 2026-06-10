@@ -70,11 +70,11 @@ function loadAppDir(dir, label) {
   return { brand, menu, seo, apps };
 }
 
-function generate(config, { app, dir, outBase, platforms, dryRun }) {
+function generate(config, { app, dir, outBase, platforms, dryRun, webOnly }) {
   const { brand, menu, seo, apps } = loadAppDir(dir, app);
   const plan = planSteps({ config, app, brand });
 
-  log(`app "${app}"  →  ${brand.appName} (${brand.appId})  [${platforms.join(", ")}]`);
+  log(`app "${app}"  →  ${brand.appName} (${brand.appId})  [${webOnly ? "web-only" : platforms.join(", ")}]`);
   plan.forEach((s, i) => log(`  ${i + 1}. ${s.desc}`));
   if (dryRun) { log("dry-run: nothing executed"); return; }
 
@@ -144,6 +144,11 @@ function generate(config, { app, dir, outBase, platforms, dryRun }) {
   writeFileSync(join(out, "Dockerfile"), renderSwsDockerfile(brand));
   writeFileSync(join(out, "sws.toml"), renderSwsConfig());
   log(`emitted per-app sws image context -> ${out} (docker build -t cobdfamily/clam-${brand.appId.replace(/\./g, "-")} ${out})`);
+
+  // --web-only: the sws image needs only www/ + Dockerfile + sws.toml
+  // (all emitted above). Stop before the native Capacitor scaffold so a
+  // web/image build needs no npm install, platforms, or Android/iOS SDKs.
+  if (webOnly) { log(`web-only: ${out} ready for docker build (skipped native scaffold)`); return; }
 
   // 4. scaffold ephemeral project
   writeFileSync(join(out, "package.json"), renderProjectPackageJson(brand, config));
@@ -296,6 +301,7 @@ const { values, positionals } = parseArgs({
     out: { type: "string" },        // output base (default: the springboard dir, or PKG_DIR for legacy)
     name: { type: "string" },       // output-subdir label (default: brand.appId)
     platforms: { type: "string" },
+    "web-only": { type: "boolean", default: false },  // emit sws image context only; skip native scaffold
     "dry-run": { type: "boolean", default: false },
     all: { type: "boolean", default: false },
     list: { type: "boolean", default: false },
@@ -309,6 +315,7 @@ if (values.help) {
   --name <label>         output subdir under <out>/.generated (default: brand.appId)
   --out <dir>            output base (default: the --root dir)
   --platforms a,b        override platforms (default from generator.config.json)
+  --web-only             emit only the static-web-server image context (www + Dockerfile + sws.toml); skip the native build
   --dry-run              plan only, run nothing
   legacy (in-package apps/): --list | <app> | --all
 `);
@@ -326,7 +333,7 @@ if (values.root) {
     ?? basename(dir);
   const outBase = values.out ? resolve(values.out) : dir;
   try {
-    generate(config, { app: label, dir, outBase, platforms, dryRun: values["dry-run"] });
+    generate(config, { app: label, dir, outBase, platforms, dryRun: values["dry-run"], webOnly: values["web-only"] });
   } catch (err) {
     process.stderr.write(`error: ${err instanceof Error ? err.message : String(err)}\n`);
     process.exit(1);
@@ -349,7 +356,7 @@ try {
   for (const app of apps) {
     generate(config, {
       app, dir: join(PKG_DIR, config.appsDir, app), outBase: PKG_DIR,
-      platforms, dryRun: values["dry-run"],
+      platforms, dryRun: values["dry-run"], webOnly: values["web-only"],
     });
   }
 } catch (err) {
